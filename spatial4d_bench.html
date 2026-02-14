@@ -1,0 +1,2617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spatial4D-Bench</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://developer.huawei.com/ict/site-static/css/HuaweiSans.css">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700&display=swap" rel="stylesheet">
+    <script>
+         tailwind.config = {
+            theme: {
+                extend: {
+                    backgroundImage: {
+                            // 整体背景：从淡雾蓝渐变到柔和的灰蓝色（不再刺眼）
+                            'gradient-background': 'linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%)',
+                            
+                            // 卡片背景：避开纯白，采用“纸质感”的极浅灰色，底部略微带点蓝灰
+                            'gradient-card': 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)'
+                        },
+                        colors: {
+                            primary: '#1d4ed8',   // 深蓝色（比之前更沉稳）
+                            secondary: '#6d28d9', // 深紫色
+                            accent: '#4338ca',    // 深靛蓝
+                            light: '#e2e8f0',     // 浅灰色作为辅助色
+                            darkText: '#1e293b'   // 代替纯黑，使用深青灰色文字，更护眼
+                        }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* 1. 字体继承：确保与网页全局字体完全一致 */
+        .release-table-wrapper {
+            font-family: inherit; 
+            margin-top: 20px;
+            overflow-x: auto; /* 适配手机端，防止横框溢出 */
+        }
+
+        /* 2. 横框与对齐：宽度会自动随父容器（container）调整 */
+        .release-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 2rem;
+            background-color: transparent; /* 保持与背景一致 */
+        }
+
+        .release-table th, 
+        .release-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd; /* 与大多数网页的分割线风格一致 */
+        }
+
+        .release-table th {
+            background-color: rgba(0,0,0,0.03); /* 轻微背景区分表头 */
+            font-weight: 600;
+        }
+
+        /* 3. 强调 Challenge 行 */
+        .highlight-row {
+            background-color: rgba(255, 193, 7, 0.05); /* 淡淡的金色提示 */
+        }
+        
+        .highlight-row td {
+            color: #d97706; /* 橙黄色系，醒目但不突兀 */
+        }
+
+        body {
+            /* 英文数字会显示 Manrope，中文会显示 Huawei Sans */
+            font-family: 'Manrope', 'Huawei Sans', sans-serif;
+            font-variant-numeric: tabular-nums; /* 如果有表格数字需求，Manrope 表现极佳 */
+        }
+
+        /* 2. 核心：确保图标库不受全局字体的影响 */
+        /* Font Awesome 的类名通常以 fa- 开头，或者使用特定的类名 */
+        .fa, .fas, .far, .fab, .fa-solid, .fa-brands, .fa-regular {
+            font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands" !important;
+            /* 强制图标使用它自己的字体库 */
+        }
+
+        /* 可选：优化渲染效果 */
+        body {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+        }
+        .prose p {
+            margin-bottom: 1rem;
+            line-height: 1.75;
+        }
+        .author-separator::after {
+            content: ", ";
+            margin: 0 0.25rem;
+        }
+        .author-separator:last-child::after {
+            content: "";
+        }
+        .gradient-text {
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .card-hover:hover {
+            box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.15);
+            transform: translateY(-2px);
+        }
+        body {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+        }
+        .superscript {
+            font-size: 0.75em;
+            vertical-align: super;
+            line-height: 0;
+        }
+        .custom-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+        }
+        .custom-icon svg {
+            width: 24px;
+            height: 24px;
+            stroke: rgb(18, 38, 223);
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            fill: none;
+        }
+        /* .attribute-icon { background: linear-gradient(135deg, #3b82f6, #0ea5e9); }
+        .semantic-icon { background: linear-gradient(135deg, #8b5cf6, #c084fc); }
+        .geometric-icon { background: linear-gradient(135deg, #10b981, #34d399); }
+        .spatiotemporal-icon { background: linear-gradient(135deg, #f59e0b, #f97316); }
+        .commonsense-icon { background: linear-gradient(135deg, #6366f1, #818cf8); }
+        .temporal-icon { background: linear-gradient(135deg, #ad306f, #911553); } */
+        
+        /* Spatial background pattern */
+        .spatial-background {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .spatial-background::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(59, 130, 246, 0.1) 2px, transparent 2px),
+                radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.1) 2px, transparent 2px),
+                radial-gradient(circle at 40% 70%, rgba(16, 185, 129, 0.1) 2px, transparent 2px),
+                radial-gradient(circle at 60% 50%, rgba(245, 158, 11, 0.1) 2px, transparent 2px),
+                radial-gradient(circle at 30% 80%, rgba(99, 102, 241, 0.1) 2px, transparent 2px);
+            background-size: 200px 200px;
+            opacity: 0.4;
+            z-index: 0;
+        }
+        
+        .spatial-background .content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Coordinate grid pattern */
+        .coordinate-grid {
+            background-image: 
+                linear-gradient(rgba(59, 130, 246, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(59, 130, 246, 0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+        
+        /* Two-image layout for egocentric reasoning */
+        .two-image-container {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+        
+        .two-image-container .image-wrapper {
+            flex: 1;
+            text-align: center;
+        }
+        
+        .two-image-container .image-wrapper img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 6px;
+            margin-bottom: 4px;
+        }
+        
+        .two-image-container .image-wrapper .label {
+            font-size: 0.75rem;
+            color: #64748b;
+            font-weight: 500;
+        }
+        
+        /* Correct answer display for sequence questions */
+        .correct-sequence {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+        
+        .correct-sequence-item {
+            background-color: #f0fdf4;
+            border: 1px solid #22c55e;
+            border-radius: 4px;
+            padding: 2px 8px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .correct-sequence-item:not(:last-child)::after {
+            content: " →";
+            color: #22c55e;
+            margin-left: 4px;
+        }
+        
+        /* Options display with letters */
+        .options-list {
+            margin-top: 0.5rem;
+        }
+        
+        .option-item {
+            padding: 0.25rem 0.5rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            background-color: #f8fafc;
+            margin-bottom: 0.25rem;
+        }
+        
+        .option-letter {
+            font-weight: bold;
+            margin-right: 0.5rem;
+            color: #6b7280;
+        }
+        
+        .correct-answer {
+            font-weight: bold;
+            color: #22c55e;
+        }
+        .case-carousel {
+            position: relative;
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+        .case-item {
+            display: none;
+            padding: 1.5rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 0.75rem;
+            background: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        .case-item.active {
+            display: block;
+        }
+        .carousel-controls {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 2rem;
+        }
+        .carousel-control {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 0.5rem;
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .carousel-control:hover {
+            background: #e2e8f0;
+        }
+        .carousel-control:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #f8fafc;
+        }
+        .carousel-control i {
+            font-size: 1.25rem;
+            color: #6b7280;
+        }
+        .carousel-indicators {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        .carousel-indicator {
+            width: 0.75rem;
+            height: 0.75rem;
+            border-radius: 50%;
+            background: #e2e8f0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .carousel-indicator.active {
+            background: #3b82f6;
+        }
+        .case-image {
+            width: 80%;
+            height: auto;
+            object-fit: contain;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            border: 1px solid #e2e8f0;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .case-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #1f2937;
+        }
+        .case-question {
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+            line-height: 1.5;
+            color: #4b5563;
+        }
+        .case-model-response {
+            background: #fee2e2;
+            border: 1px solid #fca5a5;
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+            color: #dc2626;
+        }
+        .case-correct-answer {
+            background: #f0fdf4;
+            border: 1px solid #4ade80;
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+            color: #16a34a;
+        }
+        .case-analysis {
+            background: #f3f4f6;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            font-size: 1.000rem;
+            color: #4b5563;
+        }
+        .case-category {
+            display: inline-block;
+            background: #e0f2fe;
+            color: #0ea5e9;
+            border-radius: 0.375rem;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+        .case-video {
+            width: 100%;
+            height: 200px;
+            background: #f3f4f6;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #e2e8f0;
+            color: #6b7280;
+            position: relative;
+        }
+        .case-video::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, #f8fafc 25%, transparent 25%), 
+                        linear-gradient(-45deg, #f8fafc 25%, transparent 25%), 
+                        linear-gradient(45deg, transparent 75%, #f8fafc 75%), 
+                        linear-gradient(-45deg, transparent 75%, #f8fafc 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+        }
+        .case-video i {
+            font-size: 3rem;
+            color: #94a3b8;
+            z-index: 1;
+        }
+        .case-model-name {
+            font-weight: 600;
+            color: #dc2626;
+            margin-bottom: 0.25rem;
+        }
+        .summary-section {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border-radius: 0.75rem;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+        .summary-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        .summary-content {
+            color: #374151;
+            line-height: 1.7;
+            text-align: justify;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- Header -->
+    <header class="bg-white/80 backdrop-blur-sm border-b border-gray-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="text-center">
+                <!-- Logo -->
+                <div style="display: flex; justify-content: center; align-items: center; height: 200px;">
+                    <img src="static/logo.JPG" alt="Icon" style="width: 300px; height: auto;">
+                </div>
+                <p class="text-lg text-gray-800 max-w-3xl mx-auto leading-relaxed mb-6" style="font-size: 35px;">
+                    A Versatile 4D Spatial Intelligence Benchmark
+                </p>
+                
+                <!-- Authors Section -->
+                <div class="text-center mb-6">
+                    <div class="flex flex-wrap justify-center gap-2 text-gray-900 font-medium mb-2" style="font-size: 20px;">
+                        <span class="author-separator">Pan Wang<span class="superscript">1</span></span>
+                        <span class="author-separator">Yang Liu<span class="superscript">1</span></span>
+                        <span class="author-separator">Guile Wu<span class="superscript">1</span></span>
+                        <span class="author-separator">Eduardo Corral-Soto<span class="superscript">1</span></span>
+                        <span class="author-separator">Chengjie Huang<span class="superscript">1</span></span>
+                        <span class="author-separator">Binbin Xu<span class="superscript">1</span></span> 
+                        <span class="author-separator">Dongfeng Bai<span class="superscript">1</span></span> 
+                        <span class="author-separator">Xu Yan<span class="superscript">1</span></span>
+                        <span class="author-separator">Yuan Ren<span class="superscript">1</span></span>
+                        <span class="author-separator">Xingxin Chen<span class="superscript">1</span></span> 
+                        <span class="author-separator">Yizhe Wu<span class="superscript">1</span></span>
+                        <span class="author-separator">Tao Huang<span class="superscript">1</span></span>
+                        <span class="author-separator">Wenjun Wan<span class="superscript">1</span></span>
+                        <span class="author-separator">Xin Wu<span class="superscript">1</span></span>
+                        <span class="author-separator">Pei Zhou<span class="superscript">1</span></span>
+                        <span class="author-separator">Xuyang Dai<span class="superscript">1</span></span>
+                        <span class="author-separator">Kangbo Lv<span class="superscript">1,5</span></span>
+                        <span class="author-separator">Hongbo Zhang<span class="superscript">1</span></span>
+                        <span class="author-separator">Yosef Fred<span class="superscript">1</span></span>
+                        <span class="author-separator">Aixue Ye<span class="superscript">1</span></span>
+                        <span class="author-separator">Bailan Feng<span class="superscript">1</span></span>
+                        <span class="author-separator">Zhenyu Chen<span class="superscript">1</span></span>
+                        <span class="author-separator">Zhen Li<span class="superscript">2</span></span>
+                        <span class="author-separator">Yingcong Chen<span class="superscript">3</span></span>
+                        <span class="author-separator">Yiyi Liao<span class="superscript">4</span></span>
+                        <span class="author-separator">Bingbing Liu<span class="superscript">1</span></span>
+                    </div>
+                    <div class="text-sm text-gray-600 space-y-1" style="font-size: 15px;">
+                        <div><span class="font-medium">1</span> Huawei Technologies, <span class="font-medium">2</span> CUHK-SZ, <span class="font-medium">3</span> HKUST-GZ, <span class="font-medium">4</span> Zhejiang University, <span class="font-medium">5</span> Tsinghua University</div>
+                        <!-- <div><span class="font-medium">2</span> CUHK-Shenzhen</div>
+                        <div><span class="font-medium">3</span> HKUST-GZ</div>
+                        <div><span class="font-medium">4</span> Zhejiang University</div>
+                        <div><span class="font-medium">5</span> Tsinghua University</div> -->
+                    </div>
+                </div>
+                
+                <!-- Resource Links -->
+                <div class="flex flex-wrap justify-center gap-4 mt-4">
+                    <a href="#" class="flex items-center space-x-2 text-gray-600 hover:text-blue-600 transition-colors bg-white/70 px-3 py-2 rounded-lg border border-gray-200 hover:border-blue-300 hover:shadow-md">
+                        <i class="fab fa-github text-lg"></i>
+                        <span class="text-sm font-medium">Code</span>
+                    </a>
+                    <a href="https://arxiv.org/abs/2601.00092" class="flex items-center space-x-2 text-gray-600 hover:text-red-600 transition-colors bg-white/70 px-3 py-2 rounded-lg border border-gray-200 hover:border-red-300 hover:shadow-md">
+                        <i class="fas fa-file-alt text-lg"></i>
+                        <span class="text-sm font-medium">Paper</span>
+                    </a>
+                    <a href="https://huggingface.co/datasets/Yukinozzzzz/Spatial4D-Bench" class="flex items-center space-x-2 text-gray-600 hover:text-yellow-600 transition-colors bg-white/70 px-3 py-2 rounded-lg border border-gray-200 hover:border-yellow-300 hover:shadow-md">
+                        <i class="fas fa-cloud text-lg"></i>
+                        <span class="text-sm font-medium">Data</span>
+                    </a>
+                    <!-- <a href="#" class="flex items-center space-x-2 text-gray-600 hover:text-green-600 transition-colors bg-white/70 px-3 py-2 rounded-lg border border-gray-200 hover:border-green-300 hover:shadow-md">
+                        <i class="fas fa-database text-lg"></i>
+                        <span class="text-sm font-medium">Dataset</span>
+                    </a> -->
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Abstract Section -->
+        <div class="bg-white/70 backdrop-blur-sm rounded-xl p-6 border border-gray-200 mb-8 shadow-lg">
+            <h2 class="text-3xl font-bold text-gray-900 mb-4" style="text-align: center">Abstract</h2>
+            <div class="prose max-w-none text-gray-700 leading-relaxed" style="font-size: 20px;">
+                <p class="mb-4" style="text-align: justify;">
+                    4D spatial intelligence involves perceiving and processing how objects move or change
+                    over time. Humans naturally possess 4D spatial intelligence, supporting a broad spectrum
+                    of spatial reasoning abilities. To what extent can Multimodal Large Language Models
+                    (MLLMs) achieve human-level 4D spatial intelligence? In this work, we present <strong>Spatial4D-Bench</strong>, a versatile 4D spatial intelligence benchmark designed to comprehensively assess the
+                    4D spatial reasoning abilities of MLLMs. Unlike existing spatial intelligence benchmarks
+                    that are often small-scale or limited in diversity, <strong>Spatial4D-Bench</strong> provides a large-scale,
+                    multi-task evaluation benchmark consisting of ~50,000 question-answer pairs covering 18
+                    well-defined tasks. We systematically organize these tasks into six cognitive categories: ob-
+                    ject understanding, scene understanding, spatial relationship understanding, spatiotemporal
+                    relationship understanding, spatial reasoning and spatiotemporal reasoning. Spatial4D-
+                    Bench thereby offers a structured and comprehensive benchmark for evaluating the spatial
+                    cognition abilities of MLLMs, covering a broad spectrum of tasks that parallel the versatility
+                    of human spatial intelligence. We benchmark various state-of-the-art open-source and
+                    proprietary MLLMs on <strong>Spatial4D-Bench</strong> and reveal their substantial limitations in a wide
+                    variety of 4D spatial reasoning aspects, such as route plan, action recognition, and physical
+                    plausibility reasoning. We hope that the findings provided in this work offer valuable insights
+                    to the community and that our benchmark can facilitate the development of more capable
+                    MLLMs toward human-level 4D spatial intelligence. 
+                </p>
+            </div>
+        </div>
+        
+        <h2 class="text-3xl font-bold text-gray-900 mb-4" style="text-align: center">Overview</h2>
+        <div class="max-w-7xl max-auto py-6" style="font-size: 20px;">
+            <img src="static/overview.jpg" alt="Overview" class="rounded-xl shadow-lg w-full">
+            <p class="text-left mt-4 text-gray-600" style="text-align: justify;">
+                Figure 1: An overview of <strong>Spatial4D-Bench</strong>. <strong>Spatial4D-Bench</strong> is a large-scale, multi-task evaluation benchmark
+                to comprehensively assess MLLMs’ 4D spatial reasoning abilities. It consists of ~40,000 question-answer pairs
+                covering 18 well-defined tasks, which are organized into 6 categories, including object understanding, scene
+                understanding, spatial relationship understanding, spatiotemporal relationship understanding, spatial reasoning
+                and spatiotemporal reasoning, covering various aspects of 4D spatial reasoning.
+            </p>
+        </div>
+
+        <div class="max-w-7xl max-auto py-6" style="font-size: 20px;">
+            <div style="display: flex; justify-content: center; align-items: center;">
+                <img src="static/compare.png" alt="Overview" class="rounded-xl shadow-lg">
+            </div>
+            <p class="text-center mt-4 text-gray-600" style="text-align: justify;">
+                Table 1: Comparison of <strong>Spatial4D-Bench</strong> with state-of-the-art spatial intelligence benchmarks. We evaluate
+                coverage across 6 cognitive categories: object understanding (size, attribute, count and affordance), scene
+                understanding (room size, scene class and grounding), spatial relationships (absolute/relative distance and
+                orientation), spatiotemporal (S.T.) relationships (action, order, memory and state change), spatial reasoning
+                (egocentric and route plan), and spatiotemporal reasoning (prediction and physical plausibility). Unlike prior
+                works, <strong>Spatial4D-Bench</strong> provides significantly higher data scale and comprehensive coverage of all 18 tasks,
+                offering a robust evaluation of MLLMs’ 4D reasoning capabilities.
+            </p>
+        </div>
+
+        <div class="max-w-7xl max-auto py-6" style="font-size: 20px;">
+            <img src="static/dataset_statistics.jpg" alt="Overview" class="rounded-xl shadow-lg w-full">
+            <p class="text-center mt-4 text-gray-600">
+                Figure 2: Distribution of question-answer pairs provided by our <strong>Spatial4D-Bench</strong>.
+            </p>
+        </div>
+
+        <div class="max-w-7xl max-auto py-6" style="font-size: 20px;">
+            <img src="static/taxonomy.png" alt="Overview" class="rounded-xl shadow-lg w-full">
+            <p class="text-left mt-4 text-gray-600" style="text-align: justify;">
+                Figure 3: <strong>Spatial4D-Bench</strong> Task Taxonomy. We organize 18 distinct tasks into 6 progressive categories
+                representing the spectrum of spatial cognition. The taxonomy progresses from perception and understanding in
+                object/scene level, through spatial/spatiotemporal understanding, to dynamic spatial/spatiotemporal reasoning,
+                mirroring the cognitive abilities of human intelligence.
+            </p>
+        </div>
+
+        <!-- Stats Section -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div class="text-center p-3 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl border border-blue-200 shadow-md">
+                <div class="text-lg md:text-xl font-bold text-blue-700 mb-1">15</div>
+                <div class="text-gray-600 text-sm" style="font-size: 15px;">Datasets</div>
+            </div>
+            <div class="text-center p-3 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl border border-purple-200 shadow-md">
+                <div class="text-lg md:text-xl font-bold text-purple-700 mb-1">6</div>
+                <div class="text-gray-600 text-sm" style="font-size: 15px;">Categories</div>
+            </div>
+            <div class="text-center p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200 shadow-md">
+                <div class="text-lg md:text-xl font-bold text-green-700 mb-1">18</div>
+                <div class="text-gray-600 text-sm" style="font-size: 15px;">Total Tasks</div>
+            </div>
+            <div class="text-center p-3 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200 shadow-md">
+                <div class="text-lg md:text-xl font-bold text-amber-700 mb-1">50000+</div>
+                <div class="text-gray-600 text-sm" style="font-size: 15px;">QA Pairs</div>
+            </div>
+        </div>
+
+        <!-- Benchmark Sections -->
+        <div class="grid grid-cols-1 md:grid-cols-6 gap-6 mb-12" id="benchmark-sections">
+            <!-- Object Understanding -->
+            <div class="bg-white/70 backdrop-blur-sm rounded-xl p-6 border border-gray-200 hover:border-blue-300 transition-all duration-300 cursor-pointer shadow-lg card-hover" data-section="ObjectUnderstanding">
+                <div class="flex flex-col items-center space-y-4 mb-4">
+                    <div class="custom-icon">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/>
+                        </svg>
+                    </div>
+                    <div class="text-center">
+                        <h2 class="text-lg font-bold text-gray-900 mb-2">Object Understanding</h2>
+                        <p class="text-gray-600 text-sm">Evaluates the ability to perceive and understand object properties and characteristics in spatial environments.</p>
+                    </div>
+                    <i class="fas fa-chevron-down text-gray-400 w-5 h-5 transition-transform duration-300"></i>
+                </div>
+            </div>
+
+            <!-- Scene Understanding -->
+            <div class="bg-white/70 backdrop-blur-sm rounded-xl p-6 border border-gray-200 hover:border-blue-300 transition-all duration-300 cursor-pointer shadow-lg card-hover" data-section="SceneUnderstanding">
+                <div class="flex flex-col items-center space-y-4 mb-4">
+                    <div class="custom-icon">
+                        <svg viewBox="0 0 24 24">
+                            <circle cx="11" cy="11" r="8"/>
+                            <path d="m21 21-4.35-4.35"/>
+                        </svg>
+                    </div>
+                    <div class="text-center">
+                        <h2 class="text-lg font-bold text-gray-900 mb-2">Scene Understanding</h2>
+                        <p class="text-gray-600 text-sm">Assesses the capability to comprehend entire spatial scenes and their structural characteristics.
+                        </p>
+                    </div>
+                    <i class="fas fa-chevron-down text-gray-400 w-5 h-5 transition-transform duration-300"></i>
+                </div>
+            </div>
+
+            <!-- Spatial Relationship Understanding -->
+            <div class="bg-white/70 backdrop-blur-sm rounded-xl p-6 border border-gray-200 hover:border-blue-300 transition-all duration-300 cursor-pointer shadow-lg card-hover" data-section="SpatialRelationshipUnderstanding">
+                <div class="flex flex-col items-center space-y-4 mb-4">
+                    <div class="custom-icon">
+                        <svg viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polygon points="12,2 13,12 22,12 13,13 12,22 11,13 2,12 11,11 12,2"/>
+                        </svg>
+                    </div>
+                    <div class="text-center">
+                        <h2 class="text-lg font-bold text-gray-900 mb-2">Spatial Relationship Understanding</h2>
+                        <p class="text-gray-600 text-sm"> Measures the ability to recognize and quantify spatial relationships between objects in 3D space.</p>
+                    </div>
+                    <i class="fas fa-chevron-down text-gray-400 w-5 h-5 transition-transform duration-300"></i>
+                </div>
+            </div>
+
+            <!-- Spatiotemporal Relationship Understanding -->
+            <div class="bg-white/70 backdrop-blur-sm rounded-xl p-6 border border-gray-200 hover:border-orange-300 transition-all duration-300 cursor-pointer shadow-lg card-hover" data-section="SpatiotemporalRelationshipUnderstanding">
+                <div class="flex flex-col items-center space-y-4 mb-4">
+                    <div class="custom-icon">
+                        <svg viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polyline points="12 6 12 12 16 14"/>
+                        </svg>
+                    </div>
+                    <div class="text-center">
+                        <h2 class="text-lg font-bold text-gray-900 mb-2">Spatiotemporal Relationship Understanding</h2>
+                        <p class="text-gray-600 text-sm"> Evaluates the understanding of spatial relationships that evolve over time and temporal dynamics.</p>
+                    </div>
+                    <i class="fas fa-chevron-down text-gray-400 w-5 h-5 transition-transform duration-300"></i>
+                </div>
+            </div>
+
+            <!-- Spatial Reasoning -->
+            <div class="bg-white/70 backdrop-blur-sm rounded-xl p-6 border border-gray-200 hover:border-indigo-300 transition-all duration-300 cursor-pointer shadow-lg card-hover" data-section="SpatialReasoning">
+                <div class="flex flex-col items-center space-y-4 mb-4">
+                    <div class="custom-icon">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                            <path d="M15 9.5c-.5 2-2 4.5-5 4.5s-4.5-2.5-5-4.5"/>
+                        </svg>
+                    </div>
+                    <div class="text-center">
+                        <h2 class="text-lg font-bold text-gray-900 mb-2">Spatial Reasoning</h2>
+                        <p class="text-gray-600 text-sm">Tests the capacity to reason about spatial information and solve spatial problems in static environments.</p>
+                    </div>
+                    <i class="fas fa-chevron-down text-gray-400 w-5 h-5 transition-transform duration-300"></i>
+                </div>
+            </div>
+
+            <!-- Spatiotemporal Reasoning -->
+            <div class="bg-white/70 backdrop-blur-sm rounded-xl p-6 border border-gray-200 hover:border-indigo-300 transition-all duration-300 cursor-pointer shadow-lg card-hover" data-section="SpatiotemporalReasoning">
+                <div class="flex flex-col items-center space-y-4 mb-4">
+                    <div class="custom-icon">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/>
+                        </svg>
+                    </div>
+                    <div class="text-center">
+                        <h2 class="text-lg font-bold text-gray-900 mb-2">Spatiotemporal Reasoning</h2>
+                        <p class="text-gray-600 text-sm">Assesses the ability to reason about spatial events and predict outcomes over time in dynamic environments.</p>
+                    </div>
+                    <i class="fas fa-chevron-down text-gray-400 w-5 h-5 transition-transform duration-300"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Subtasks Content (Hidden by default) -->
+        <div id="subtasks-content" class="hidden space-y-4 mb-12">
+            <!-- Content will be populated by JavaScript -->
+        </div>
+
+        <!-- QA Examples Section (Hidden by default) -->
+        <div id="qa-examples-section" class="hidden bg-white/70 backdrop-blur-sm rounded-xl p-6 border border-gray-200 mb-12 shadow-lg">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-2xl font-bold text-gray-900" id="qa-title">QA Examples</h3>
+                <i class="fas fa-comment text-blue-500 text-xl"></i>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="qa-examples-grid">
+                <!-- QA examples will be populated by JavaScript -->
+            </div>
+        </div>
+
+       <!-- Leaderboard Section -->
+       <div class="mt-16">
+        <div class="space-y-8">
+            <div class="text-center mb-8">
+                <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-r from-yellow-400 to-orange-500 mb-4 shadow-lg">
+                    <i class="fas fa-trophy text-white text-xl"></i>
+                </div>
+                <h2 class="text-3xl font-bold text-gray-900 mb-2">Spatial4D-Bench Leaderboard</h2>
+                <p class="text-lg text-gray-600 max-w-3xl mx-auto">
+                    Current standings of AI models evaluated on the comprehensive Spatial4D-Bench benchmark with 18 subtasks.
+                </p>
+            </div>
+
+            <div class="bg-white/70 backdrop-blur-sm rounded-xl p-4 border border-gray-200 shadow-lg overflow-x-auto">
+                <table class="w-full min-w-[1600px]">
+                    <thead>
+                        <tr class="border-b border-gray-200 bg-gray-50">
+                            <th rowspan="2" class="text-left py-3 px-3 text-gray-600 font-semibold text-sm">Rank</th>
+                            <th rowspan="2" class="text-left py-3 px-3 text-gray-600 font-semibold text-sm">Model</th>
+                            <th rowspan="2" class="text-left py-3 px-3 text-gray-600 font-semibold text-sm">Institution</th>
+                            <th rowspan="2" class="text-right py-3 px-3 text-gray-600 font-semibold text-sm">Overall</th>
+                            <!-- Object Understanding -->
+                            <th colspan="4" class="text-center py-2 px-3 text-gray-600 font-semibold text-xs bg-blue-50">Object Understanding</th>
+                            <!-- Scene Understanding -->
+                            <th colspan="3" class="text-center py-2 px-3 text-gray-600 font-semibold text-xs bg-purple-50">Scene Understanding</th>
+                            <!-- Spatial Relationship Understanding -->
+                            <th colspan="3" class="text-center py-2 px-3 text-gray-600 font-semibold text-xs bg-green-50">Spatial Relationship Understanding</th>
+                            <!-- Spatiotemporal Relationship Understanding -->
+                            <th colspan="4" class="text-center py-2 px-3 text-gray-600 font-semibold text-xs bg-orange-50">Spatiotemporal Relationship Understanding</th>
+                            <!-- Spatial Reasoning -->
+                            <th colspan="2" class="text-center py-2 px-3 text-gray-600 font-semibold text-xs bg-indigo-50">Spatial Reasoning</th>
+                            <!-- Spatiotemporal Reasoning -->
+                            <th colspan="2" class="text-center py-2 px-3 text-gray-600 font-semibold text-xs bg-indigo-50">Spatiotemporal Reasoning</th>
+                        </tr>
+                        <tr class="border-b border-gray-200 bg-gray-50">
+                            <!-- Object Understanding -->                           
+                            <th class="text-right py-2 px-2 text-gray-600 font-semibold text-xs">Obj. Attr.</th>
+                            <th class="text-right py-2 px-2 text-gray-600 font-semibold text-xs">Obj. Size</th>
+                            <th class="text-right py-2 px-2 text-gray-600 font-semibold text-xs">Obj. Count</th>
+                            <th class="text-right py-2 px-2 text-gray-600 font-semibold text-xs">Affordance</th>
+                            <!-- Scene Understanding -->
+                            <th class="text-right py-2 px-2 text-gray-600 font-semibold text-xs">Room Size</th>
+                            <th class="text-right py-2 px-2 text-gray-600 font-semibold text-xs">Scene Class</th> 
+                            <th class="text-right py-2 px-2 text-gray-600 font-semibold text-xs">3D Grounding</th>
+                            <!-- Spatial Relationship Understanding -->
+                            <th class="text-right py-2 px-2 text-gray-600 font-semibold text-xs">Abs Dist</th>
+                            <th class="text-right py-2 px-2 text-gray-600 font-semibold text-xs">Rel Dist</th>
+                            <th class="text-right py-2 px-2 text-gray-600 font-semibold text-xs">Rel Orient</th>
+                            <!-- Spatiotemporal Relationship Understanding -->
+                            <th class="text-right py-2 px-2 text-gray-600 font-semibold text-xs">Action Recog</th>
+                            <th class="text-right py-2 px-2 text-gray-600 font-semibold text-xs">App Order</th>
+                            <th class="text-right py-2 px-2 text-gray-600 font-semibold text-xs">Spatial Mem</th>
+                            <th class="text-right py-2 px-2 text-gray-600 font-semibold text-xs">State Change</th>
+                            <!-- Spatial Reasoning -->  
+                            <th class="text-right py-2 px-2 text-gray-600 font-semibold text-xs">Ego Reason</th> 
+                            <th class="text-right py-2 px-2 text-gray-600 font-semibold text-xs">Route Plan</th> 
+                            <!-- Spatiotemporal Reasoning -->                       
+                            <th class="text-right py-2 px-2 text-gray-600 font-semibold text-xs">Action Pred</th>
+                            <th class="text-right py-2 px-2 text-gray-600 font-semibold text-xs">Phys Plaus</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Baseline Section -->
+                        <tr class="baseline-header">
+                            <td colspan="22" class="py-2 px-3 text-gray-900 font-semibold text-sm">Baseline Models</td>
+                        </tr>
+                        
+                        <tr class="baseline-row">
+                            <td class="py-3 px-3">
+                                <div class="flex items-center space-x-2">
+                                    <i class="fas fa-users text-gray-500 text-sm"></i>
+                                    <span class="font-bold text-gray-700">Human</span>
+                                </div>
+                            </td>
+                            <td class="py-3 px-3">
+                                <div class="font-semibold text-gray-900">Human Level</div>
+                            </td>
+                            <td class="py-3 px-3 text-gray-700 text-sm">Human Annotators</td>
+                            <td class="py-3 px-3 text-right font-bold text-blue-600 text-sm">78.02%</td>
+                            <td class="py-3 px-2 text-right text-blue-600 text-xs">74.61%</td>
+                            <td class="py-3 px-2 text-right text-blue-600 text-xs">89.09%</td>
+                            <td class="py-3 px-2 text-right text-blue-600 text-xs">66.79%</td>
+                            <td class="py-3 px-2 text-right text-purple-600 text-xs">81.48%</td>
+                            <td class="py-3 px-2 text-right text-purple-600 text-xs">55.00%</td>
+                            <td class="py-3 px-2 text-right text-purple-600 text-xs">83.33%</td>
+                            <td class="py-3 px-2 text-right text-purple-600 text-xs">78.85%</td>
+                            <td class="py-3 px-2 text-right text-green-600 text-xs">48.08%</td>
+                            <td class="py-3 px-2 text-right text-green-600 text-xs">71.15%</td>
+                            <td class="py-3 px-2 text-right text-green-600 text-xs">69.23%</td>
+                            <td class="py-3 px-2 text-right text-green-600 text-xs">100.00%</td>
+                            <td class="py-3 px-2 text-right text-orange-600 text-xs">83.33%</td>
+                            <td class="py-3 px-2 text-right text-orange-600 text-xs">73.33%</td>
+                            <td class="py-3 px-2 text-right text-orange-600 text-xs">93.33%</td>
+                            <td class="py-3 px-2 text-right text-orange-600 text-xs">95.00%</td>
+                            <td class="py-3 px-2 text-right text-indigo-600 text-xs">91.67%</td>
+                            <td class="py-3 px-2 text-right text-indigo-600 text-xs">83.33%</td>
+                            <td class="py-3 px-2 text-right text-indigo-600 text-xs">66.67%</td>
+                        </tr>
+                        
+                        <tr class="baseline-row">
+                            <td class="py-3 px-3">
+                                <div class="flex items-center space-x-2">
+                                    <i class="fas fa-dice text-gray-500 text-sm"></i>
+                                    <span class="font-bold text-gray-700">Random</span>
+                                </div>
+                            </td>
+                            <td class="py-3 px-3">
+                                <div class="font-semibold text-gray-900">Chance-level (Random)</div>
+                            </td>
+                            <td class="py-3 px-3 text-gray-700 text-sm">Random Guess</td>
+                            <td class="py-3 px-3 text-right font-bold text-gray-500 text-sm">-</td>
+                            <td class="py-3 px-2 text-right text-gray-500 text-xs">-</td>
+                            <td class="py-3 px-2 text-right text-gray-500 text-xs">25.00%</td>
+                            <td class="py-3 px-2 text-right text-gray-500 text-xs">-</td>
+                            <td class="py-3 px-2 text-right text-gray-500 text-xs">25.00%</td>
+                            <td class="py-3 px-2 text-right text-gray-500 text-xs">-</td>
+                            <td class="py-3 px-2 text-right text-gray-500 text-xs">25.00%</td>
+                            <td class="py-3 px-2 text-right text-gray-500 text-xs">25.00%</td>
+                            <td class="py-3 px-2 text-right text-gray-500 text-xs">-</td>
+                            <td class="py-3 px-2 text-right text-gray-500 text-xs">25.00%</td>
+                            <td class="py-3 px-2 text-right text-gray-500 text-xs">25.00%</td>
+                            <td class="py-3 px-2 text-right text-gray-500 text-xs">25.00%</td>
+                            <td class="py-3 px-2 text-right text-gray-500 text-xs">25.0%</td>
+                            <td class="py-3 px-2 text-right text-gray-500 text-xs">25.0%</td>
+                            <td class="py-3 px-2 text-right text-gray-500 text-xs">25.00%</td>
+                            <td class="py-3 px-2 text-right text-gray-500 text-xs">25.00%</td>
+                            <td class="py-3 px-2 text-right text-gray-500 text-xs">5.03%</td>
+                            <td class="py-3 px-2 text-right text-gray-500 text-xs">25.00%</td>
+                            <td class="py-3 px-2 text-right text-gray-500 text-xs">25.00%</td>
+                        </tr>
+                        
+                        <tr class="baseline-row">
+                            <td class="py-3 px-3">
+                                <div class="flex items-center space-x-2">
+                                    <i class="fas fa-chart-pie text-gray-500 text-sm"></i>
+                                    <span class="font-bold text-gray-700">Frequency</span>
+                                </div>
+                            </td>
+                            <td class="py-3 px-3">
+                                <div class="font-semibold text-gray-900">Chance-level (Frequency)</div>
+                            </td>
+                            <td class="py-3 px-3 text-gray-700 text-sm">Most Frequent Answer</td>
+                            <td class="py-3 px-3 text-right font-bold text-gray-500 text-sm">-</td>
+                            <!-- Attribute Reasoning -->
+                            <td class="py-3 px-2 text-right text-gray-500 text-xs">-</td>
+                            <td class="py-3 px-2 text-right text-gray-500 text-xs">29.32%</td>
+                            <td class="py-3 px-2 text-right text-gray-500 text-xs">-</td>
+                            <!-- Semantic Reasoning -->
+                            <td class="py-3 px-2 text-right text-gray-500 text-xs">28.27%</td>
+                            <td class="py-3 px-2 text-right text-gray-500 text-xs">-</td>
+                            <td class="py-3 px-2 text-right text-gray-500 text-xs">26.11%</td>
+                            <td class="py-3 px-2 text-right text-gray-500 text-xs">33.90%</td>
+                            <!-- Geometric Relationship -->
+                            <td class="py-3 px-2 text-right text-gray-500 text-xs">-</td>
+                            <td class="py-3 px-2 text-right text-gray-500 text-xs">30.57%</td>
+                            <td class="py-3 px-2 text-right text-gray-500 text-xs">25.12%</td>
+                            <td class="py-3 px-2 text-right text-gray-500 text-xs">25.80%</td>
+                            <!-- Spatio-temporal -->
+                            <td class="py-3 px-2 text-right text-gray-500 text-xs">26.14%</td>
+                            <td class="py-3 px-2 text-right text-gray-500 text-xs">30.45%</td>
+                            <td class="py-3 px-2 text-right text-gray-500 text-xs">29.33%</td>
+                            <td class="py-3 px-2 text-right text-gray-500 text-xs">32.57%</td>
+                            <!-- Common Sense -->
+                            <td class="py-3 px-2 text-right text-gray-500 text-xs">-</td>
+                            <td class="py-3 px-2 text-right text-gray-500 text-xs">27.73%</td>
+                            <td class="py-3 px-2 text-right text-gray-500 text-xs">30.10%</td>
+                        </tr>
+                        
+                        <!-- Model Section -->
+                        <tr class="model-row">
+                            <td colspan="22" class="py-2 px-3 text-gray-900 font-semibold text-sm">MLLM Models</td>
+                        </tr>
+                        
+                        <tr class="border-b border-gray-100 hover:bg-blue-50">
+                            <td class="py-3 px-3">
+                                <div class="flex items-center space-x-2">
+                                    <i class="fas fa-medal text-yellow-500 text-sm"></i>
+                                    <span class="font-bold text-gray-900">1</span>
+                                </div>
+                            </td>
+                            <td class="py-3 px-3">
+                                <div class="font-semibold text-gray-900">GPT-5</div>
+                                <div class="text-xs text-gray-500">PROPRIETARY</div>
+                            </td>
+                            <td class="py-3 px-3 text-gray-700 text-sm">OpenAI</td>
+                            <td class="py-3 px-3 text-right font-bold text-green-600 text-sm">60.90%</td>
+                            <td class="py-3 px-2 text-right text-blue-600 text-xs">78.64%</td>
+                            <td class="py-3 px-2 text-right text-blue-600 text-xs">68.71%</td>
+                            <td class="py-3 px-2 text-right text-blue-600 text-xs">54.49%</td>
+                            <td class="py-3 px-2 text-right text-purple-600 text-xs">67.41%</td>
+                            <td class="py-3 px-2 text-right text-purple-600 text-xs">45.56%</td>
+                            <td class="py-3 px-2 text-right text-purple-600 text-xs">75.16%</td>
+                            <td class="py-3 px-2 text-right text-purple-600 text-xs">70.59%</td>
+                            <td class="py-3 px-2 text-right text-green-600 text-xs">37.69%</td>
+                            <td class="py-3 px-2 text-right text-green-600 text-xs">68.57%</td>
+                            <td class="py-3 px-2 text-right text-green-600 text-xs">49.25%</td>
+                            <td class="py-3 px-2 text-right text-green-600 text-xs">71.60%</td>
+                            <td class="py-3 px-2 text-right text-orange-600 text-xs">68.45%</td>
+                            <td class="py-3 px-2 text-right text-orange-600 text-xs">58.80%</td>
+                            <td class="py-3 px-2 text-right text-orange-600 text-xs">83.20%</td>
+                            <td class="py-3 px-2 text-right text-orange-600 text-xs">58.80%</td>
+                            <td class="py-3 px-2 text-right text-indigo-600 text-xs">32.83%</td>
+                            <td class="py-3 px-2 text-right text-indigo-600 text-xs">66.67%</td>
+                            <td class="py-3 px-2 text-right text-indigo-600 text-xs">38.78%</td>
+                        </tr>
+                        <tr class="border-b border-gray-100 hover:bg-purple-50">
+                            <td class="py-3 px-3">
+                                <div class="flex items-center space-x-2">
+                                    <i class="fas fa-medal text-gray-400 text-sm"></i>
+                                    <span class="font-bold text-gray-900">2</span>
+                                </div>
+                            </td>
+                            <td class="py-3 px-3">
+                                <div class="font-semibold text-gray-900">Qwen3-VL-235B-A22B</div>
+                                <div class="text-xs text-gray-500">OPEN</div>
+                            </td>
+                            <td class="py-3 px-3 text-gray-700 text-sm">Alibaba Cloud</td>
+                            <td class="py-3 px-3 text-right font-bold text-green-600 text-sm">56.17%</td>
+                            <td class="py-3 px-2 text-right text-blue-600 text-xs">79.76%</td>
+                            <td class="py-3 px-2 text-right text-blue-600 text-xs">62.21%</td>
+                            <td class="py-3 px-2 text-right text-blue-600 text-xs">64.70%</td>
+                            <td class="py-3 px-2 text-right text-purple-600 text-xs">57.82%</td>
+                            <td class="py-3 px-2 text-right text-purple-600 text-xs">56.62%</td>
+                            <td class="py-3 px-2 text-right text-purple-600 text-xs">64.38%</td>
+                            <td class="py-3 px-2 text-right text-purple-600 text-xs">60.88%</td>
+                            <td class="py-3 px-2 text-right text-green-600 text-xs">44.52%</td>
+                            <td class="py-3 px-2 text-right text-green-600 text-xs">60.23%</td>
+                            <td class="py-3 px-2 text-right text-green-600 text-xs">55.40%</td>
+                            <td class="py-3 px-2 text-right text-green-600 text-xs">61.12%</td>
+                            <td class="py-3 px-2 text-right text-orange-600 text-xs">66.17%</td>
+                            <td class="py-3 px-2 text-right text-orange-600 text-xs">49.52%</td>
+                            <td class="py-3 px-2 text-right text-orange-600 text-xs">68.20%</td>
+                            <td class="py-3 px-2 text-right text-orange-600 text-xs">44.20%</td>
+                            <td class="py-3 px-2 text-right text-indigo-600 text-xs">19.50%</td>
+                            <td class="py-3 px-2 text-right text-indigo-600 text-xs">57.69%</td>
+                            <td class="py-3 px-2 text-right text-indigo-600 text-xs">38.11%</td>
+                        </tr>
+                        <tr class="border-b border-gray-100 hover:bg-green-50">
+                            <td class="py-3 px-3">
+                                <div class="flex items-center space-x-2">
+                                    <i class="fas fa-medal text-amber-600 text-sm"></i>
+                                    <span class="font-bold text-gray-900">3</span>
+                                </div>
+                            </td>
+                            <td class="py-3 px-3">
+                                <div class="font-semibold text-gray-900">Gemini-2.5-Pro</div>
+                                <div class="text-xs text-gray-500">PROPRIETARY</div>
+                            </td>
+                            <td class="py-3 px-3 text-gray-700 text-sm">Google Research</td>
+                            <td class="py-3 px-3 text-right font-bold text-green-600 text-sm">54.68%</td>
+                            <td class="py-3 px-2 text-right text-blue-600 text-xs">74.14%</td>
+                            <td class="py-3 px-2 text-right text-blue-600 text-xs">67.25%</td>
+                            <td class="py-3 px-2 text-right text-blue-600 text-xs">32.40%</td>
+                            <td class="py-3 px-2 text-right text-purple-600 text-xs">56.82%</td>
+                            <td class="py-3 px-2 text-right text-purple-600 text-xs">49.19%</td>
+                            <td class="py-3 px-2 text-right text-purple-600 text-xs">65.59%</td>
+                            <td class="py-3 px-2 text-right text-purple-600 text-xs">70.44%</td>
+                            <td class="py-3 px-2 text-right text-green-600 text-xs">30.00%</td>
+                            <td class="py-3 px-2 text-right text-green-600 text-xs">63.37%</td>
+                            <td class="py-3 px-2 text-right text-green-600 text-xs">42.33%</td>
+                            <td class="py-3 px-2 text-right text-green-600 text-xs">55.05%</td>
+                            <td class="py-3 px-2 text-right text-orange-600 text-xs">67.20%</td>
+                            <td class="py-3 px-2 text-right text-orange-600 text-xs">52.29%</td>
+                            <td class="py-3 px-2 text-right text-orange-600 text-xs">79.57%</td>
+                            <td class="py-3 px-2 text-right text-orange-600 text-xs">55.80%</td>
+                            <td class="py-3 px-2 text-right text-indigo-600 text-xs">30.67%</td>
+                            <td class="py-3 px-2 text-right text-indigo-600 text-xs">50.48%</td>
+                            <td class="py-3 px-2 text-right text-indigo-600 text-xs">41.56%</td>
+                        </tr>
+                        <tr class="border-b border-gray-100 hover:bg-orange-50">
+                            <td class="py-3 px-3">
+                                <div class="flex items-center space-x-2">
+                                    <span class="font-bold text-gray-700">4</span>
+                                </div>
+                            </td>
+                            <td class="py-3 px-3">
+                                <div class="font-semibold text-gray-900">Qwen3-VL-30B-A3B</div>
+                                <div class="text-xs text-gray-500">OPEN</div>
+                            </td>
+                            <td class="py-3 px-3 text-gray-700 text-sm">Alibaba Cloud</td>
+                            <td class="py-3 px-3 text-right font-bold text-green-600 text-sm">53.29%</td>
+                            <td class="py-3 px-2 text-right text-blue-600 text-xs">80.10%</td>
+                            <td class="py-3 px-2 text-right text-blue-600 text-xs">58.92%</td>
+                            <td class="py-3 px-2 text-right text-blue-600 text-xs">67.74%</td>
+                            <td class="py-3 px-2 text-right text-purple-600 text-xs">52.41%</td>
+                            <td class="py-3 px-2 text-right text-purple-600 text-xs">67.22%</td>
+                            <td class="py-3 px-2 text-right text-purple-600 text-xs">54.72%</td>
+                            <td class="py-3 px-2 text-right text-purple-600 text-xs">50.55%</td>
+                            <td class="py-3 px-2 text-right text-green-600 text-xs">42.20%</td>
+                            <td class="py-3 px-2 text-right text-green-600 text-xs">58.11%</td>
+                            <td class="py-3 px-2 text-right text-green-600 text-xs">53.94%</td>
+                            <td class="py-3 px-2 text-right text-green-600 text-xs">42.95%</td>
+                            <td class="py-3 px-2 text-right text-orange-600 text-xs">61.48%</td>
+                            <td class="py-3 px-2 text-right text-orange-600 text-xs">47.42%</td>
+                            <td class="py-3 px-2 text-right text-orange-600 text-xs">72.73%</td>
+                            <td class="py-3 px-2 text-right text-orange-600 text-xs">41.90%</td>
+                            <td class="py-3 px-2 text-right text-indigo-600 text-xs">12.00%</td>
+                            <td class="py-3 px-2 text-right text-indigo-600 text-xs">56.46%</td>
+                            <td class="py-3 px-2 text-right text-indigo-600 text-xs">38.33%</td>
+                        </tr>
+                        <tr class="border-b border-gray-100 hover:bg-indigo-50">
+                            <td class="py-3 px-3">
+                                <div class="flex items-center space-x-2">
+                                    <span class="font-bold text-gray-700">5</span>
+                                </div>
+                            </td>
+                            <td class="py-3 px-3">
+                                <div class="font-semibold text-gray-900">InternVL3.5-241B-A28B</div>
+                                <div class="text-xs text-gray-500">OPEN</div>
+                            </td>
+                            <td class="py-3 px-3 text-gray-700 text-sm">Shanghai AI Lab</td>
+                            <td class="py-3 px-3 text-right font-bold text-green-600 text-sm">50.89%</td>
+                            <td class="py-3 px-2 text-right text-blue-600 text-xs">62.17%</td>
+                            <td class="py-3 px-2 text-right text-blue-600 text-xs">57.83%</td>
+                            <td class="py-3 px-2 text-right text-blue-600 text-xs">63.63%</td>
+                            <td class="py-3 px-2 text-right text-purple-600 text-xs">59.86%</td>
+                            <td class="py-3 px-2 text-right text-purple-600 text-xs">47.62%</td>
+                            <td class="py-3 px-2 text-right text-purple-600 text-xs">58.06%</td>
+                            <td class="py-3 px-2 text-right text-purple-600 text-xs">47.35%</td>
+                            <td class="py-3 px-2 text-right text-green-600 text-xs">31.80%</td>
+                            <td class="py-3 px-2 text-right text-green-600 text-xs">62.81%</td>
+                            <td class="py-3 px-2 text-right text-green-600 text-xs">31.16%</td>
+                            <td class="py-3 px-2 text-right text-green-600 text-xs">60.32%</td>
+                            <td class="py-3 px-2 text-right text-orange-600 text-xs">60.53%</td>
+                            <td class="py-3 px-2 text-right text-orange-600 text-xs">45.22%</td>
+                            <td class="py-3 px-2 text-right text-orange-600 text-xs">71.13%</td>
+                            <td class="py-3 px-2 text-right text-orange-600 text-xs">40.90%</td>
+                            <td class="py-3 px-2 text-right text-indigo-600 text-xs">21.83%</td>
+                            <td class="py-3 px-2 text-right text-indigo-600 text-xs">54.29%</td>
+                            <td class="py-3 px-2 text-right text-indigo-600 text-xs">39.44%</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="py-3 px-3">
+                                <div class="flex items-center space-x-2">
+                                    <span class="font-bold text-gray-700">6</span>
+                                </div>
+                            </td>
+                            <td class="py-3 px-3">
+                                <div class="font-semibold text-gray-900">InternVL3.5-38B</div>
+                                <div class="text-xs text-gray-500">OPEN</div>
+                            </td>
+                            <td class="py-3 px-3 text-gray-700 text-sm">Shanghai AI Lab</td>
+                            <td class="py-3 px-3 text-right font-bold text-green-600 text-sm">49.47%</td>
+                            <td class="py-3 px-2 text-right text-blue-600 text-xs">65.63%</td>
+                            <td class="py-3 px-2 text-right text-blue-600 text-xs">55.00%</td>
+                            <td class="py-3 px-2 text-right text-blue-600 text-xs">60.59%</td>
+                            <td class="py-3 px-2 text-right text-purple-600 text-xs">63.36%</td>
+                            <td class="py-3 px-2 text-right text-purple-600 text-xs">55.02%</td>
+                            <td class="py-3 px-2 text-right text-purple-600 text-xs">61.18%</td>
+                            <td class="py-3 px-2 text-right text-purple-600 text-xs">38.09%</td>
+                            <td class="py-3 px-2 text-right text-green-600 text-xs">28.51%</td>
+                            <td class="py-3 px-2 text-right text-green-600 text-xs">55.48%</td>
+                            <td class="py-3 px-2 text-right text-green-600 text-xs">52.47%</td>
+                            <td class="py-3 px-2 text-right text-green-600 text-xs">48.55%</td>
+                            <td class="py-3 px-2 text-right text-orange-600 text-xs">54.77%</td>
+                            <td class="py-3 px-2 text-right text-orange-600 text-xs">43.88%</td>
+                            <td class="py-3 px-2 text-right text-orange-600 text-xs">69.60%</td>
+                            <td class="py-3 px-2 text-right text-orange-600 text-xs">36.80%</td>
+                            <td class="py-3 px-2 text-right text-indigo-600 text-xs">15.50%</td>
+                            <td class="py-3 px-2 text-right text-indigo-600 text-xs">45.47%</td>
+                            <td class="py-3 px-2 text-right text-indigo-600 text-xs">36.33%</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="py-3 px-3">
+                                <div class="flex items-center space-x-2">
+                                    <span class="font-bold text-gray-700">7</span>
+                                </div>
+                            </td>
+                            <td class="py-3 px-3">
+                                <div class="font-semibold text-gray-900">Qwen2.5-VL-32B</div>
+                                <div class="text-xs text-gray-500">OPEN</div>
+                            </td>
+                            <td class="py-3 px-3 text-gray-700 text-sm">Alibaba Cloud</td>
+                            <td class="py-3 px-3 text-right font-bold text-green-600 text-sm">43.61%</td>
+                            <td class="py-3 px-2 text-right text-blue-600 text-xs">62.27%</td>
+                            <td class="py-3 px-2 text-right text-blue-600 text-xs">56.08%</td>
+                            <td class="py-3 px-2 text-right text-blue-600 text-xs">37.89%</td>
+                            <td class="py-3 px-2 text-right text-purple-600 text-xs">51.00%</td>
+                            <td class="py-3 px-2 text-right text-purple-600 text-xs">50.35%</td>
+                            <td class="py-3 px-2 text-right text-purple-600 text-xs">52.32%</td>
+                            <td class="py-3 px-2 text-right text-purple-600 text-xs">29.41%</td>
+                            <td class="py-3 px-2 text-right text-green-600 text-xs">28.15%</td>
+                            <td class="py-3 px-2 text-right text-green-600 text-xs">45.28%</td>
+                            <td class="py-3 px-2 text-right text-green-600 text-xs">42.29%</td>
+                            <td class="py-3 px-2 text-right text-green-600 text-xs">43.53%</td>
+                            <td class="py-3 px-2 text-right text-orange-600 text-xs">37.20%</td>
+                            <td class="py-3 px-2 text-right text-orange-600 text-xs">47.13%</td>
+                            <td class="py-3 px-2 text-right text-orange-600 text-xs">65.37%</td>
+                            <td class="py-3 px-2 text-right text-orange-600 text-xs">34.90%</td>
+                            <td class="py-3 px-2 text-right text-indigo-600 text-xs">14.17%</td>
+                            <td class="py-3 px-2 text-right text-indigo-600 text-xs">57.69%</td>
+                            <td class="py-3 px-2 text-right text-indigo-600 text-xs">29.89%</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="py-3 px-3">
+                                <div class="flex items-center space-x-2">
+                                    <span class="font-bold text-gray-700">8</span>
+                                </div>
+                            </td>
+                            <td class="py-3 px-3">
+                                <div class="font-semibold text-gray-900">Qwen2.5-VL-72B</div>
+                                <div class="text-xs text-gray-500">OPEN</div>
+                            </td>
+                            <td class="py-3 px-3 text-gray-700 text-sm">Alibaba Cloud</td>
+                            <td class="py-3 px-3 text-right font-bold text-green-600 text-sm">43.26%</td>
+                            <td class="py-3 px-2 text-right text-blue-600 text-xs">65.47%</td>
+                            <td class="py-3 px-2 text-right text-blue-600 text-xs">59.58%</td>
+                            <td class="py-3 px-2 text-right text-blue-600 text-xs">33.65%</td>
+                            <td class="py-3 px-2 text-right text-purple-600 text-xs">54.86%</td>
+                            <td class="py-3 px-2 text-right text-purple-600 text-xs">39.97%</td>
+                            <td class="py-3 px-2 text-right text-purple-600 text-xs">51.81%</td>
+                            <td class="py-3 px-2 text-right text-purple-600 text-xs">31.14%</td>
+                            <td class="py-3 px-2 text-right text-green-600 text-xs">24.90%</td>
+                            <td class="py-3 px-2 text-right text-green-600 text-xs">44.16%</td>
+                            <td class="py-3 px-2 text-right text-green-600 text-xs">21.02%</td>
+                            <td class="py-3 px-2 text-right text-green-600 text-xs">47.33%</td>
+                            <td class="py-3 px-2 text-right text-orange-600 text-xs">39.70%</td>
+                            <td class="py-3 px-2 text-right text-orange-600 text-xs">47.51%</td>
+                            <td class="py-3 px-2 text-right text-orange-600 text-xs">68.60%</td>
+                            <td class="py-3 px-2 text-right text-orange-600 text-xs">40.70%</td>
+                            <td class="py-3 px-2 text-right text-indigo-600 text-xs">14.17%</td>
+                            <td class="py-3 px-2 text-right text-indigo-600 text-xs">63.40%</td>
+                            <td class="py-3 px-2 text-right text-indigo-600 text-xs">30.78%</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="py-3 px-3">
+                                <div class="flex items-center space-x-2">
+                                    <span class="font-bold text-gray-700">9</span>
+                                </div>
+                            </td>
+                            <td class="py-3 px-3">
+                                <div class="font-semibold text-gray-900">InternVL3.5-8B</div>
+                                <div class="text-xs text-gray-500">OPEN</div>
+                            </td>
+                            <td class="py-3 px-3 text-gray-700 text-sm">Shanghai AI Lab</td>
+                            <td class="py-3 px-3 text-right font-bold text-green-600 text-sm">41.87%</td>
+                            <td class="py-3 px-2 text-right text-blue-600 text-xs">47.39%</td>
+                            <td class="py-3 px-2 text-right text-blue-600 text-xs">47.96%</td>
+                            <td class="py-3 px-2 text-right text-blue-600 text-xs">55.99%</td>
+                            <td class="py-3 px-2 text-right text-purple-600 text-xs">49.41%</td>
+                            <td class="py-3 px-2 text-right text-purple-600 text-xs">50.16%</td>
+                            <td class="py-3 px-2 text-right text-purple-600 text-xs">48.40%</td>
+                            <td class="py-3 px-2 text-right text-purple-600 text-xs">33.86%</td>
+                            <td class="py-3 px-2 text-right text-green-600 text-xs">25.89%</td>
+                            <td class="py-3 px-2 text-right text-green-600 text-xs">48.51%</td>
+                            <td class="py-3 px-2 text-right text-green-600 text-xs">40.17%</td>
+                            <td class="py-3 px-2 text-right text-green-600 text-xs">40.37%</td>
+                            <td class="py-3 px-2 text-right text-orange-600 text-xs">50.27%</td>
+                            <td class="py-3 px-2 text-right text-orange-600 text-xs">40.15%</td>
+                            <td class="py-3 px-2 text-right text-orange-600 text-xs">62.07%</td>
+                            <td class="py-3 px-2 text-right text-orange-600 text-xs">31.10%</td>
+                            <td class="py-3 px-2 text-right text-indigo-600 text-xs">9.83%</td>
+                            <td class="py-3 px-2 text-right text-indigo-600 text-xs">42.99%</td>
+                            <td class="py-3 px-2 text-right text-indigo-600 text-xs">29.22%</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="py-3 px-3">
+                                <div class="flex items-center space-x-2">
+                                    <span class="font-bold text-gray-700">10</span>
+                                </div>
+                            </td>
+                            <td class="py-3 px-3">
+                                <div class="font-semibold text-gray-900">VideoLlama3-7B</div>
+                                <div class="text-xs text-gray-500">OPEN</div>
+                            </td>
+                            <td class="py-3 px-3 text-gray-700 text-sm">Alibaba Cloud</td>
+                            <td class="py-3 px-3 text-right font-bold text-green-600 text-sm">38.30%</td>
+                            <td class="py-3 px-2 text-right text-blue-600 text-xs">33.21%</td>
+                            <td class="py-3 px-2 text-right text-blue-600 text-xs">52.88%</td>
+                            <td class="py-3 px-2 text-right text-blue-600 text-xs">52.69%</td>
+                            <td class="py-3 px-2 text-right text-purple-600 text-xs">33.91%</td>
+                            <td class="py-3 px-2 text-right text-purple-600 text-xs">28.41%</td>
+                            <td class="py-3 px-2 text-right text-purple-600 text-xs">50.86%</td>
+                            <td class="py-3 px-2 text-right text-purple-600 text-xs">26.99%</td>
+                            <td class="py-3 px-2 text-right text-green-600 text-xs">23.84%</td>
+                            <td class="py-3 px-2 text-right text-green-600 text-xs">41.99%</td>
+                            <td class="py-3 px-2 text-right text-green-600 text-xs">31.01%</td>
+                            <td class="py-3 px-2 text-right text-green-600 text-xs">42.90%</td>
+                            <td class="py-3 px-2 text-right text-orange-600 text-xs">40.27%</td>
+                            <td class="py-3 px-2 text-right text-orange-600 text-xs">43.21%</td>
+                            <td class="py-3 px-2 text-right text-orange-600 text-xs">55.83%</td>
+                            <td class="py-3 px-2 text-right text-orange-600 text-xs">40.80%</td>
+                            <td class="py-3 px-2 text-right text-indigo-600 text-xs">14.67%</td>
+                            <td class="py-3 px-2 text-right text-indigo-600 text-xs">40.68%</td>
+                            <td class="py-3 px-2 text-right text-indigo-600 text-xs">35.22%</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="py-3 px-3">
+                                <div class="flex items-center space-x-2">
+                                    <span class="font-bold text-gray-700">11</span>
+                                </div>
+                            </td>
+                            <td class="py-3 px-3">
+                                <div class="font-semibold text-gray-900">Qwen2.5-VL-7B</div>
+                                <div class="text-xs text-gray-500">OPEN</div>
+                            </td>
+                            <td class="py-3 px-3 text-gray-700 text-sm">Alibaba Cloud</td>
+                            <td class="py-3 px-3 text-right font-bold text-green-600 text-sm">37.13%</td>
+                            <td class="py-3 px-2 text-right text-blue-600 text-xs">35.63%</td>
+                            <td class="py-3 px-2 text-right text-blue-600 text-xs">52.29%</td>
+                            <td class="py-3 px-2 text-right text-blue-600 text-xs">46.84%</td>
+                            <td class="py-3 px-2 text-right text-purple-600 text-xs">40.00%</td>
+                            <td class="py-3 px-2 text-right text-purple-600 text-xs">39.82%</td>
+                            <td class="py-3 px-2 text-right text-purple-600 text-xs">42.71%</td>
+                            <td class="py-3 px-2 text-right text-purple-600 text-xs">25.96%</td>
+                            <td class="py-3 px-2 text-right text-green-600 text-xs">18.93%</td>
+                            <td class="py-3 px-2 text-right text-green-600 text-xs">38.96%</td>
+                            <td class="py-3 px-2 text-right text-green-600 text-xs">24.79%</td>
+                            <td class="py-3 px-2 text-right text-green-600 text-xs">39.25%</td>
+                            <td class="py-3 px-2 text-right text-orange-600 text-xs">39.36%</td>
+                            <td class="py-3 px-2 text-right text-orange-600 text-xs">40.25%</td>
+                            <td class="py-3 px-2 text-right text-orange-600 text-xs">55.13%</td>
+                            <td class="py-3 px-2 text-right text-orange-600 text-xs">36.00%</td>
+                            <td class="py-3 px-2 text-right text-indigo-600 text-xs">13.50%</td>
+                            <td class="py-3 px-2 text-right text-indigo-600 text-xs">46.94%</td>
+                            <td class="py-3 px-2 text-right text-indigo-600 text-xs">31.89%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- <h2 class="text-3xl font-bold text-gray-900 mb-2" style="text-align: center">Main Evaluation Results</h2>
+            <div class="max-w-7xl max-auto" style="font-size: 20px;">
+            <div style="display: flex; justify-content: center; align-items: center;">
+                <img src="static/radar.png" alt="Overview" class="rounded-xl shadow-lg">
+            </div>
+            <p class="text-left mt-4 text-gray-600" style="text-align: center;">
+                Figure 4: Radar chart visualization of model performance across 18 tasks on <strong>Spatial4D-Bench</strong>.
+            </p>
+        </div>
+
+        <div class="max-w-7xl max-auto" style="font-size: 20px;">
+            <div style="display: flex; justify-content: center; align-items: center;">
+                <img src="static/blind.png" alt="Overview" class="rounded-xl shadow-lg">
+            </div>
+            <p class="text-left mt-4 text-gray-600" style="text-align: justify;">
+                Table 2: Visual Ablation Study evaluated on Qwen3-VL-30B-A3B. Video Input: Full 64 frames. Image
+                Input: Single frame (random). Text Input: Text-only. While performance generally degrades as visual
+                information is removed, text-only input (bolded) outperforms single-frame input in tasks requiring global
+                context (e.g., route plan, scene classification), suggesting that incomplete visual data can act as a distractor
+                that overrides correct language priors.
+            </p>
+        </div>
+
+        <div class="prose max-w-none text-gray-700 leading-relaxed" style="font-size: 20px;">
+            <p class="mb-4" style="text-align: justify;">
+                <strong>The overall performance gap between MLLMs and human-level 4D spatial intelligence remains significant.</strong>
+                From Figure 4a and the leaderboard result, we can see that the overall 4D spatial intelligence performance of
+                MLLMs remains significantly inferior to that of humans. The best proprietary model, GPT-5, achieves an
+                average score of 63.39, while the best open-source model, Qwen3-VL-235B-A22B, yields an average score of
+                59.35. This indicates that the performance gap between the best proprietary MLLMs and the best open-source
+                MLLMs is relatively small, although the best proprietary MLLMs still perform better. However, the overall
+                performance gap between MLLMs (both proprietary and open-source) and human-level 4D spatial intelligence
+                remains significant. On <strong>Spatial4D-Bench</strong>, humans achieve an average score of 75.52, outperforming the best
+                proprietary model (GPT-5) by approximately 12 and the best open-source model (Qwen3-VL-235B-A22B)
+                by 16. Current MLLMs appear to operate as “frame-based observers” rather than “world observers”. They
+                lack an intuitive physics engine or coherent temporal memory, preventing effective reasoning about causality,
+                permanence, and dynamics. <strong>Spatial4D-Bench</strong> effectively exposes this 4D reasoning gap, which was invisible
+                in existing benchmarks. Substantial efforts are required to further improve MLLMs toward human-level spatial
+                cognition.
+            </p>
+        </div>
+
+        <div class="prose max-w-none text-gray-700 leading-relaxed" style="font-size: 20px;">
+            <p class="mb-4" style="text-align: justify;">
+                <strong>MLLMs have reached or even surpassed human-level spatial cognition on some understanding-related
+                tasks.</strong> As shown in leaderboard, Figure 4b and Figure 4c, for the fundamental object/scene understanding
+                category (e.g. object size, object counting, and room size), existing MLLMs often reach or even surpass
+                human performance. In particular, Qwen3-VL-30B-A3B achieves 80.10 on the object size estimation task,
+                outperforming the human baseline of 74.61. In addition, on the object counting task, the best MLLM also
+                outperforms human performance. We attribute this to distinct cognitive processing differences. First, while
+                humans rely on intuitive relative scale, they struggle with precise absolute metric estimation (e.g., “is this table
+                1.2m or 1.4m?”) from 2D projections without explicit reference scales while MLLMs leverage massive prior
+                knowledge obtained by pre-training on 3D and geometric data which are useful. Moreover, it is noticed that
+                external factors can also result in low accuracy of the human evaluation. For example, in object counting, to
+                elevate the the difficulty level in model evaluation, <strong>Spatial4D-Bench</strong> includes a set of low-resolution videos
+                with significant jittering and inconsistent frames compared with videos used in VSI-Bench, posing a huge challenge
+                to human evaluators in correctly matching and identifying the objects within these videos. We have also found
+                that discrepancies among humans in defining the object categories also play an important role in the low
+                accuracy of this task. While a nightstand is considered to be a table in the QA design, a human evaluator may
+                not count it as a table, causing inconsistent result with the ground truth answer.
+            </p>
+        </div>
+
+        <div class="prose max-w-none text-gray-700 leading-relaxed" style="font-size: 20px;">
+            <p class="mb-4" style="text-align: justify;">
+                <strong>MLLMs usually perform significantly worse than humans on spatial reasoning and spatiotemporal
+                reasoning tasks.</strong> The primary source of the human-AI gap lies in reasoning-related tasks. As shown
+                in leaderboard, Figure 4e, and Figure 4f, MLLMs exhibit substantial performance degradation on the spatial
+                reasoning and spatiotemporal reasoning categories. These challenging categories are the core of <strong>Spatial4D-Bench</strong>.
+                Specifically, for spatiotemporal reasoning, even the top-tier MLLMs lag significantly behind humans
+                (e.g., GPT-5 scores 32.83 on route plan vs. Human 91.67). This ~60% gap highlights a fundamental deficiency
+                of MLLMs in maintaining a coherent 4D world model over extended temporal sequences. For the physical plausibility reasoning task, MLLMs score near random chance (30% − 40%), whereas humans intuitively
+                reject these physically impossible scenarios (66.67%). This indicates that SOTA MLLMs struggle to ground
+                visual perception in fundamental physical laws.
+            </p>
+        </div>
+
+        <div class="mt-16 mb-16">
+            <div class="text-center mb-8">
+                <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-r from-red-400 to-orange-500 mb-4 shadow-lg">
+                    <i class="fas fa-exclamation-triangle text-white text-xl"></i>
+                </div>
+                <h2 class="text-3xl font-bold text-gray-900 mb-2">Qualitative Case Analysis</h2>
+                <p class="text-lg text-gray-600 max-w-3xl mx-auto">
+                    Examples of failure cases where state-of-the-art models provide incorrect answers despite human-level performance on the same tasks.
+                </p>
+            </div>
+
+            <div class="case-carousel">
+                <div class="case-item active" id="case-1">
+                    <div class="case-category">Spatiotemporal Reasoning - Action Prediction</div>
+                    <h3 class="case-title">Case 1: MLLMs are Relatively Fragile in Spatio-Temporal Continuity</h3>
+                    <img src="static/action.png" alt="act" class="case-image">
+                    <div class="case-analysis" style="text-align: justify;">
+                        <strong>Analysis:</strong> A major challenge in 4D spatial intelligence
+                        is spatiotemporal reasoning that requires understanding a coherent 4D world over time rather than treating
+                        videos as a collection of disjoint semantic concepts. By designing tasks that connect past, present, and future
+                        visual observations, <strong>Spatial4D-Bench</strong> reveals a significant temporal incoherence in SOTA MLLMs. In Case 1
+                        (failure), the ground truth action is “washing” a yogurt cup, but the model incorrectly predicts “placing it in
+                        the sink”, driven by a semantic prior rather than the specific temporal action. The benchmark’s design allows
+                        us to probe the cause via the model’s self-explanation: “...the person walks to the sink holding the empty cup...
+                        indicating they are about to place it in the sink rather than wash it or throw it away”. This textual feedback
+                        from the model demonstrates that the model successfully tracked the trajectory but failed to infer the latent
+                        intent (washing for recycling), proving that even powerful models fail to ground their predictions in the actual
+                        temporal dynamics when those dynamics conflict with training priors. On the other hand, Case 2 (success)
+                        validates the benchmark’s ability to measure robust chain-of-thought reasoning when explicit cues (OCR) are
+                        present. The model correctly infers the drink will taste “sweet” by synthesizing the label “sugar” with the
+                        stirring action (“mixing sugar into the drink makes it sweet...”). This contrast underscores the diagnostic value
+                        of our <strong>Spatial4D-Bench</strong>: it can distinguish between scenarios where models rely on robust textual grounding
+                        versus those where they collapse into hallucination due to temporal ambiguity.
+                    </div>
+                </div>
+
+                <div class="case-item" id="case-2">
+                    <div class="case-category">Spatiotemporal Reasoning - Physical Plausibility Reasoning</div>
+                    <h3 class="case-title">Case 2: MLLMs Exhibit a Knowledge-Perception Gap in Intuitive Physics</h3>
+                    <img src="static/phsysic.png" alt="physic" class="case-image">
+                    <div class="case-analysis" style="text-align: justify;">
+                        <strong>Analysis:</strong> By incorporating the physical
+                        plausibility reasoning in the spatiotemporal reasoning category, specifically using AI-generated physical
+                        anomalies, <strong>Spatial4D-Bench</strong> provides a unique evaluation of the “intuitive physics engine” of MLLMs. Our
+                        evaluation exposes a sharp dissociation between low-level perceptual grounding and high-level physical
+                        knowledge. In Case 1 (failure), the benchmark challenges the model with a subtle violation of fluid
+                        dynamics. GPT-5 fails to identify a physical anomaly where liquid levels behave inconsistently during pouring,
+                        yet its self-explanation recites perfect high-level physics principles: “Matter doesn’t disappear from one
+                        place and reappear somewhere else... Teleportation breaks locality and conservation of mass...”. This result
+                        highlights a critical insight enabled by our benchmark: SOTA models possess abstract knowledge of physical
+                        laws but lack the visual grounding to detect their violation in pixel space. The model “knows” the laws of
+                        physics but cannot “see” them being broken, relying instead on analyzing the textual plausibility of the options
+                        (e.g., rejecting “teleportation” as a concept) rather than verifying the visual dynamics. <strong>Spatial4D-Bench</strong> thus
+                        serves as a necessary filter to differentiate between models that merely know physics textually and those that
+                        can perceive physics visually. In contrast, Case 2 (success) shows that the model is capable of detecting
+                        violations in rigid body dynamics. It correctly identifies that a baseball and bat exhibit unnatural softness and
+                        defy gravity, suggesting that conspicuous deviations in material properties and trajectory dynamics are easier
+                        for current architectures to flag than subtle fluid inconsistencies.
+                    </div>
+                </div>
+
+                <div class="case-item" id="case-3">
+                    <div class="case-category">Spatiotemporal Relationship Understanding - Spatial Memory</div>
+                    <h3 class="case-title">Case 3: MLLMs have Spatial Hallucination Driven by Texture Confusion</h3>
+                    <img src="static/spatial.png" alt="spatial" class="case-image">
+                    <div class="case-analysis" style="text-align: justify;">
+                        <strong>Analysis:</strong> Through evaluation on <strong>Spatial4D-Bench</strong>,
+                        we observe that perceptual ambiguity can lead to confident hallucinations, even in tasks (such as spatial
+                        memory) that require explicit tracking. In Case 1 (failure), the model incorrectly localizes the final
+                        position of a teapot. Crucially, the self-explanation reveals a confident hallucination: “After he pours the
+                        water... he places the teapot on the back-right burner (the burner directly above the original position)”. This
+                        contradicts the visual evidence of the teapot’s placement in other locations. This suggests that texture similarity
+                        across the stove top surface causes the model to lose track of the object’s specific geometric coordinates.
+                        Unlike a tracking failure where a model might express uncertainty, here the model constructs a coherent (but
+                        false) narrative to fill the perceptual gap. This failure mode validates the necessity of <strong>Spatial4D-Bench</strong>’s
+                        fine-grained annotation: unlike simpler existence or classification tasks, our spatial memory queries force the
+                        model to confront texture confusion and occlusion. The benchmark demonstrates that even when a model is
+                        confident and generates plausible-sounding narratives, it often lacks the precise metric grounding required for
+                        4D spatial intelligence. By contrast, Case 2 (success) demonstrates that the model maintains robust temporal
+                        tracking when visual events are semantically distinct. The model correctly counts that the faucet was used
+                        “two” times. Its self-explanation, “...first to wash their hands at the sink, and later to fill a glass with water”,
+                        shows a successful linking of two separate temporal events, implying that the “grounding gap” is highly
+                        sensitive to visual saliency. The model fails when tracking requires resolving low-level texture ambiguity (Case 1) but succeeds when tracking high-level, semantically distinct actions (Case 2), further validating the
+                        benchmark’s ability to probe the granular limits of spatial memory.
+                    </div>
+                </div>
+
+                <div class="case-item" id="case-4">
+                    <div class="case-category">Spatial Reasoning - Route Plan</div>
+                    <h3 class="case-title">Case 4: MLLMs Rely on Hallucination in Egocentric Route Plan</h3>
+                    <img src="static/navigation.png" alt="spatial" class="case-image">
+                    <div class="case-analysis" style="text-align: justify;">
+                        <strong>Analysis:</strong> The route plan task in the spatial reasoning
+                        category illustrates the inability of current MLLMs to construct accurate mental maps from egocentric video
+                        streams. In the Figure, the model attempts to plan a path from a hallway to a bathroom. While GPT-5 outputs a
+                        confident self-explanation, reasoning that a right turn at step 7 would “line up with the bedroom doorway”, this
+                        contradicts the visual geometry: the robot has just entered a hallway configuration where a left turn (option A)
+                        is geometrically required to face the bedroom entrance. The model hallucinates a spatial layout that fits its internal narrative but ignores the visual reality of the scene. Furthermore, while the model correctly identifies
+                        the final turn (step 11) as a right turn, this success is coincidental, derived from a flawed intermediate trajectory.
+                        This failure highlights a critical bottleneck: SOTA MLLMs struggle with long-horizon spatial consistency and
+                        relative orientation. By enforcing strict directional accuracy over multi-step paths, <strong>Spatial4D-Bench</strong> effectively
+                        disentangles true embodied route planning capabilities from lucky guesses driven by language priors.
+                    </div>
+                </div> -->
+
+                <div class="carousel-indicators" id="case-indicators">
+                    <div class="carousel-indicator active" data-index="0"></div>
+                    <div class="carousel-indicator" data-index="1"></div>
+                    <div class="carousel-indicator" data-index="2"></div>
+                    <div class="carousel-indicator" data-index="3"></div>
+                </div>
+
+                <div class="carousel-controls">
+                    <button class="carousel-control" id="prev-case" aria-label="Previous case">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="carousel-control" id="next-case" aria-label="Next case">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Summary and Conclusion Section -->
+        <!-- <div class="summary-section">
+            <h2 class="summary-title">Summary and Conclusion</h2>
+            <div class="summary-content" style="font-size: 18px;">
+                <p class="mb-4">
+                    In this work, we present <strong>Spatial4D-Bench</strong>, a large-scale, multi-task 4D spatial intelligence benchmark
+                    designed to comprehensively assess the spatial reasoning abilities of MLLMs. <strong>Spatial4D-Bench</strong> comprises
+                    ~40,000 question-answer pairs which are organized into 6 categories covering 18 well-defined tasks that
+                    parallel the versatility of human spatial intelligence. This significantly distinguishes <strong>Spatial4D-Bench</strong> from
+                    existing benchmarks. Our thorough experiments on <strong>Spatial4D-Bench</strong> with 11 state-of-the-art open-source and
+                    proprietary MLLMs reveal that MLLMs still exhibit a performance gap relative to humans in comprehensive
+                    4D spatial reasoning. We have presented various findings derived from extensive experiments conducted
+                    on <strong>Spatial4D-Bench</strong>, which can provide valuable insights to the community. We hope that the release
+                    of <strong>Spatial4D-Bench</strong> facilitates the development of more capable MLLMs toward human-level 4D spatial
+                    intelligence.
+            </div>
+        </div> -->
+
+        <div class="summary-section">
+            <h2 class="summary-title">Release Schedule</h2> <div class="release-table-wrapper">
+                <table class="release-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Dataset</th>
+                            <th>Status / Note</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Feb 15, 2026</strong></td>
+                            <td>Spatial4D-Bench1K-mini</td>
+                            <td>Official Release</td>
+                        </tr>
+                        <tr class="highlight-row">
+                            <td><strong>Late March, 2026</strong></td>
+                            <td>Spatial4D-Bench40K</td>
+                            <td><em>Coming Soon!</em></td>
+                        </tr>
+                        <tr class="highlight-row">
+                            <td><strong>TBA</strong></td>
+                            <td>Spatial4D-Bench9K</td>
+                            <td><em>Coming Soon: To be used as a Challenge dataset!</em></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Summary and Conclusion Section -->
+        <div class="summary-section">
+            <h2 class="summary-title">Terms of Use</h2>
+            <div class="summary-content" style="font-size: 18px;">
+                <p class="mb-4">
+                    This dataset is published under a segmented licensing model. By accessing or using the data, you agree to comply with the following terms：
+                <p class="mb-4">
+                    <strong>Route Plan Data</strong>: This specific component is licensed under the <strong>Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)</strong>. You are free to share and adapt this material for any purpose, including commercial use, provided that you give appropriate credit and distribute your contributions under the same license.
+                <p class="mb-4">
+                    <strong>All Other Data (Remaining Components)</strong>: All other parts of the dataset are licensed under the <strong>Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)</strong>. These components may NOT be used for commercial purposes without prior written consent.
+            </div>
+        </div>
+
+
+
+            <!-- Leaderboard Stats -->
+            <!-- <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl p-4 border border-blue-200 shadow-lg">
+                    <div class="flex items-center space-x-2 mb-2">
+                        <i class="fas fa-star text-blue-600 text-sm"></i>
+                        <h3 class="text-gray-900 font-semibold text-sm">Top Performer</h3>
+                    </div>
+                    <p class="text-lg font-bold text-gray-900">Spatial4D-Vision-Pro</p>
+                    <p class="text-blue-600 text-sm">87.2% Overall Score</p>
+                </div>
+                <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 border border-green-200 shadow-lg">
+                    <div class="flex items-center space-x-2 mb-2">
+                        <i class="fas fa-chart-bar text-green-600 text-sm"></i>
+                        <h3 class="text-gray-900 font-semibold text-sm">Total Submissions</h3>
+                    </div>
+                    <p class="text-lg font-bold text-gray-900">6</p>
+                    <p class="text-green-600 text-sm">Active Models</p>
+                </div>
+                <div class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-4 border border-purple-200 shadow-lg">
+                    <div class="flex items-center space-x-2 mb-2">
+                        <i class="fas fa-users text-purple-600 text-sm"></i>
+                        <h3 class="text-gray-900 font-semibold text-sm">Institutions</h3>
+                    </div>
+                    <p class="text-lg font-bold text-gray-900">6</p>
+                    <p class="text-purple-600 text-sm">Leading Research Labs</p>
+                </div>
+            </div> -->
+        </div>
+    </div>
+</div>
+
+    <!-- Footer -->
+    <footer class="border-t border-gray-200 mt-16 bg-white/80 backdrop-blur-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="flex flex-col md:flex-row items-center justify-between">
+                <div class="flex items-center space-x-2 mb-4 md:mb-0">
+                    <div class="p-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 shadow-md">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                            <circle cx="12" cy="12" r="10" fill="none"/>
+                            <line x1="12" y1="8" x2="12" y2="16" fill="none"/>
+                            <line x1="8" y1="12" x2="16" y2="12" fill="none"/>
+                        </svg>
+                    </div>
+                    <span class="text-gray-900 font-semibold">Spatial4D-Bench</span>
+                </div>
+            </div>
+            <div class="mt-6 pt-6 border-t border-gray-200 text-center text-gray-500 text-sm">
+                <p>© Copyright (c) 2026 Huawei Technologies Co., Ltd. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Subtasks data
+        const subtasksData = {
+            'ObjectUnderstanding': [
+                { id: 'object-size', name: 'Object Size Estimation', description: 'Determine the physical dimensions of objects in the environment.' },
+                { id: 'object-attribute', name: 'Object Attribute Estimation', description: 'Identify and describe object properties like color, material, and state.' },
+                { id: 'object-count', name: 'Object Counting', description: 'Count the number of specific objects present in the environment.' },
+                { id: 'affordance', name: 'Affordance Estimation', description: 'Identify what actions or uses are possible with objects in the environment.' }
+            ],
+            'SceneUnderstanding': [
+                { id: 'scene-class', name: 'Scene Classification', description: 'Categorize the type of environment or setting shown in the video.' },
+                { id: 'object-local', name: '3D Grounding', description: 'Determine the spatial position and coordinates of objects in the scene.' },
+                { id: 'room-size', name: 'Room Size Estimation', description: 'Estimate the dimensions and volume of indoor spaces from video observations.' }
+            ],
+            'SpatialRelationshipUnderstanding': [
+                { id: 'abs-distance', name: 'Absolute Distance Estimation', description: 'Measure actual physical distances between objects or locations.' },
+                { id: 'rel-distance', name: 'Relative Distance Estimation', description: 'Estimate distances relative to other objects or reference points.' },
+                { id: 'rel-orientation', name: 'Relative Orientation Estimation', description: 'Determine directional relationships between objects (left/right, front/back).' }
+            ],
+            'SpatiotemporalRelationshipUnderstanding': [
+                { id: 'action-recog', name: 'Action Recognition', description: 'Identify and classify human actions or activities occurring in the scene.' },
+                { id: 'appearance-order', name: 'Appearance Order Reasoning', description: 'Determine the chronological sequence in which objects or events appear.' },
+                { id: 'spatial-memory', name: 'Spatial Memory', description: 'Recall and reason about previously observed spatial configurations.' },
+                { id: 'state-change', name: 'State Change Detection', description: 'Identify when and how object states or scene configurations change over time.' },
+            ],
+            'SpatialReasoning': [   
+                { id: 'navigation', name: 'Route Plan', description: 'Understand paths, routes, and spatial navigation within environments.' }, 
+                { id: 'ego-reasoning', name: 'Egocentric Reasoning', description: 'Reason about spatial relationships from a first-person perspective.' }
+            ],
+            'SpatiotemporalReasoning': [   
+                { id: 'action-prediction', name: 'Action Prediction', description: 'Predict likely future actions based on current spatial context.' },
+                { id: 'physical-plausibility', name: 'Physical Plausibility Reasoning', description: 'Assess whether spatial scenarios obey physical laws and real-world constraints.' }
+            ]
+        };
+
+        // QA Examples data - now with multiple choice and numerical questions
+        const qaExamplesData = {
+            'room-size': [
+                {
+                    video: 'https://placehold.co/400x225/f0fdf4/16a34a?',//'qa_examples/room_size/ad408c83-84db-2095-8aa4-924f966af2dc.mp4',
+                    question: "Estimate the floor area of the space in square meters, including all visible rooms.",
+                    type: "numerical",
+                    correct_answer: "17.3 m²",
+                    company: "3RScan © TUM (Wald et al.)",
+                    license: "CC BY-NC-SA 4.0",
+                    link: "https://forms.gle/NvL5dvB4tSFrHfQH6"
+                },
+                {
+                    video: 'https://placehold.co/400x225/f0fdf4/16a34a?',//'qa_examples/room_size/8eabc43e-5af7-2f32-84f8-4bb45c0d6460.mp4',
+                    question: "How many square meters is this space? Include all visible rooms.",
+                    type: "numerical",
+                    correct_answer: "5.5 m²",
+                    company: "3RScan © TUM (Wald et al.)",
+                    license: "CC BY-NC-SA 4.0",
+                    link: "https://forms.gle/NvL5dvB4tSFrHfQH6"
+                },
+                {
+                    video: 'https://placehold.co/400x225/f0fdf4/16a34a?',//'qa_examples/room_size/283ccff1-107c-24d5-8b6f-9bd3a42ca380.mp4',
+                    question: "Estimate the floor area of the space in square meters, including all visible rooms.",
+                    type: "numerical",
+                    correct_answer: "30.5 m²",
+                    company: "3RScan © TUM (Wald et al.)",
+                    license: "CC BY-NC-SA 4.0",
+                    link: "https://forms.gle/NvL5dvB4tSFrHfQH6"
+                }
+            ],
+            'object-size': [
+                {
+                    video: 'https://placehold.co/400x225/f0fdf4/16a34a?',//'qa_examples/object_size/b3d355dd-7f5b-2091-86d0-b81f777eb9c1.mp4',
+                    question: "What is the size of the sofa along its longest axis, in centimeters?",
+                    type: "numerical",
+                    correct_answer: "223 cm",
+                    company: "3RScan © TUM (Wald et al.)",
+                    license: "CC BY-NC-SA 4.0",
+                    link: "https://forms.gle/NvL5dvB4tSFrHfQH6"
+                },
+                {
+                    video: 'qa_examples/object_size/scene-1000.mp4',
+                    question: "Given a video of 289 frames, at frame 118, what is the length of the longest dimension (length, width, or height) of a white sedan in region (0.33,0.56,0.49,0.67)[Note: Bounding box region, coordinates are normalized (0~1), format (x1,y1,x2,y2) with (0,0)=top-left], measured in centimeters? (Note: The frame rate of the video is 10fps)",
+                    type: "numerical",
+                    correct_answer: "434 cm",
+                    company: "nuScenes © Motional (Caesar et al.)",
+                    license: "CC BY-NC-SA 4.0",
+                    link: "https://www.nuscenes.org/terms-of-use"
+                },
+                {
+                    video: 'https://placehold.co/400x225/f0fdf4/16a34a?',//'qa_examples/object_size/1d234010-e280-2b1a-8da8-205855a16b6b.mp4',
+                    question: "What is the size of the bed along its longest axis, in centimeters?",
+                    type: "numerical",
+                    correct_answer: "211 cm",
+                    company: "3RScan © TUM (Wald et al.)",
+                    license: "CC BY-NC-SA 4.0",
+                    link: "https://forms.gle/NvL5dvB4tSFrHfQH6"
+                }
+            ],
+            'object-attribute': [
+                {
+                    video: 'https://placehold.co/400x225/f0fdf4/16a34a?text=beneath',//'qa_examples/object_attribute/scene0081_00.mp4',
+                    question: "About the support beneath the left table, which description is correct?",
+                    type: "multiple_choice",
+                    options: [
+                        "Four wooden supports placed at corners.",
+                        "Two wide panel supports at the ends.",
+                        "No support touching the floor.",
+                        "Single straight metal cylinder supporting the table."
+                    ],
+                    correct_answer: "D",
+                    company: "ScanNet © Stanford/TUM (Dai et al.)",
+                    license: "Term of Use",
+                    link: "http://kaldir.vc.in.tum.de/scannet/ScanNet_TOS.pdf"
+                },
+                {
+                    video: 'https://placehold.co/400x225/f0fdf4/16a34a?text=chairs',//'qa_examples/object_attribute/scene0342_00.mp4',
+                    question: "There are rows of similar chairs, they all have armrests, which one best describes the shape of the armrest?",
+                    type: "multiple_choice",
+                    options: [
+                        "tapered rounded rectangle",
+                        "tapered rectangle",
+                        "rectangle",
+                        "rounded rectangle"
+                    ],
+                    correct_answer: "A",
+                    company: "ScanNet © Stanford/TUM (Dai et al.)",
+                    license: "Term of Use",
+                    link: "http://kaldir.vc.in.tum.de/scannet/ScanNet_TOS.pdf"
+                },
+                {
+                    video: 'https://placehold.co/400x225/f0fdf4/16a34a?text=whiteboard',//'qa_examples/object_attribute/scene0354_00.mp4',
+                    question: "There is a whiteboard in the room, which one is correct about it?",
+                    type: "multiple_choice",
+                    options: [
+                        "It is rectangular shaped",
+                        "It is square shaped",
+                        "It has metal frame",
+                        "It has no frame"
+                    ],
+                    correct_answer: "C",
+                    company: "ScanNet © Stanford/TUM (Dai et al.)",
+                    license: "Term of Use",
+                    link: "http://kaldir.vc.in.tum.de/scannet/ScanNet_TOS.pdf"
+                }
+            ],
+            'scene-class': [
+                {
+                    video: 'https://placehold.co/400x225/f0fdf4/16a34a?',//'qa_examples/scene_class/bcb0fe27-4f39-2c70-9dae-5c8625b3553d.mp4',
+                    question: "Which of the following descriptions of the scene in the video is the most accurate?",
+                    type: "multiple_choice",
+                    options: [
+                        "A bathroom, more towels than toilets and one sink.",
+                        "A bathroom, more sinks than toilets and two towels.",
+                        "A bathroom, zero sinks, two towels, and two toilets.",
+                        "A laundry room, one sink, two towels, and one toilet."
+                    ],
+                    correct_answer: "A",
+                    company: "3RScan © TUM (Wald et al.)",
+                    license: "CC BY-NC-SA 4.0",
+                    link: "https://forms.gle/NvL5dvB4tSFrHfQH6"
+                },
+                {
+                    video: 'https://placehold.co/400x225/f0fdf4/16a34a?',//'qa_examples/scene_class/0cac757e-8d6f-2d13-8f1d-ef6123d53655.mp4',
+                    question: "Which of the following descriptions of the scene in the video is the most accurate?",
+                    type: "multiple_choice",
+                    options: [
+                        "A living room, one mirror, one chair, and five pillows.",
+                        "A bedroom, two beds, zero blankets, and two doors.",
+                        "A bedroom, fewer blankets than doors and one bed.",
+                        "A bedroom, more beds than blankets and two doors."
+                    ],
+                    correct_answer: "C",
+                    company: "3RScan © TUM (Wald et al.)",
+                    license: "CC BY-NC-SA 4.0",
+                    link: "https://forms.gle/NvL5dvB4tSFrHfQH6"
+                },
+                {
+                    video: 'https://placehold.co/400x225/f0fdf4/16a34a?',//'qa_examples/scene_class/00d42bed-778d-2ac6-86a7-0e0e5f5f5660.mp4',
+                    question: "Which of the following descriptions of the scene in the video is the most accurate?",
+                    type: "multiple_choice",
+                    options: [
+                        "A nursery, one bed, one blanket, and two doors.",
+                        "An office, three keyboards, one backpack, and five monitors.",
+                        "A library, two keyboards, one backpack, and four monitors.",
+                        "An office, fewer keyboards than monitors and one backpack."
+                    ],
+                    correct_answer: "D",
+                    company: "3RScan © TUM (Wald et al.)",
+                    license: "CC BY-NC-SA 4.0",
+                    link: "https://forms.gle/NvL5dvB4tSFrHfQH6"
+                }
+            ],
+            'action-recog': [
+                {
+                    video: 'https://placehold.co/400x225/f0fdf4/16a34a?text=action1',//'qa_examples/action_recog/BByjyvBp6gI.mp4',
+                    question: "The video has 10633 frames at 30.0 FPS. What step is shown between frame 6683 and frame 8241?",
+                    type: "multiple_choice",
+                    options: [
+                        "mix butter and flour in a pan.",
+                        "combine macaroni sauce and cheese.",
+                        "add half-and-half and keep stirring.",
+                        "strain macaroni and rinse it with cold water."
+                    ],
+                    correct_answer: "B",
+                    company: "YouCook2 © Univ. of Michigan (Zhou et al.)",
+                    license: "Project Page",
+                    link: "http://youcook2.eecs.umich.edu/download"
+                },
+                {
+                    video: 'https://placehold.co/400x225/f0fdf4/16a34a?text=action2',//'qa_examples/action_recog/DrXVuj1Qowo.mp4',
+                    question: "The video has 14080 frames at 30.0 FPS. What step is shown between frame 5940 and frame 6090?",
+                    type: "multiple_choice",
+                    options: [
+                        "add in the channa masala chaat masala red chilli powder dry mango powder and anardana powder.",
+                        "once hot add in the asafoetida and right after that add in the crushed tomatoes.",
+                        "add in cinnamon stick bay leaf black cardamom teabags and salt.",
+                        "add in the channas/chole and mix again."
+                    ],
+                    correct_answer: "B",
+                    company: "YouCook2 © Univ. of Michigan (Zhou et al.)",
+                    license: "Project Page",
+                    link: "http://youcook2.eecs.umich.edu/download"
+                },
+                {
+                    video: 'https://placehold.co/400x225/f0fdf4/16a34a?text=action3',//'qa_examples/action_recog/RnSl1LVrItI.mp4',
+                    question: "Which of the following is the correct temporal order of these steps?",
+                    type: "multiple_choice",
+                    options: [
+                        "add chicken ribs to a bowl of water and let it boil \u2192 add some lemon grass fish sauce sugar salt chicken powder chilli flakes and stir it to combine \u2192 pound the shallots cut the chilli pepper cut the lemon grass into slices and cut some galongo \u2192 put all the vegetable into the bowl and cook them \u2192 cut the cilantro and lime",
+                        "add chicken ribs to a bowl of water and let it boil \u2192 pound the shallots cut the chilli pepper cut the lemon grass into slices and cut some galongo \u2192 put all the vegetable into the bowl and cook them \u2192 add some lemon grass fish sauce sugar salt chicken powder chilli flakes and stir it to combine \u2192 cut the cilantro and lime",
+                        "add chicken ribs to a bowl of water and let it boil \u2192 pound the shallots cut the chilli pepper cut the lemon grass into slices and cut some galongo \u2192 add some lemon grass fish sauce sugar salt chicken powder chilli flakes and stir it to combine \u2192 put all the vegetable into the bowl and cook them \u2192 cut the cilantro and lime",
+                        "pound the shallots cut the chilli pepper cut the lemon grass into slices and cut some galongo \u2192 add chicken ribs to a bowl of water and let it boil \u2192 add some lemon grass fish sauce sugar salt chicken powder chilli flakes and stir it to combine \u2192 put all the vegetable into the bowl and cook them \u2192 cut the cilantro and lime"
+                    ],
+                    correct_answer: "C",
+                    company: "YouCook2 © Univ. of Michigan (Zhou et al.)",
+                    license: "Project Page",
+                    link: "http://youcook2.eecs.umich.edu/download"
+                }
+            ],
+            'object-count': [
+                {
+                    video: 'https://placehold.co/400x225/f0fdf4/16a34a?',//'qa_examples/object_count/6bde6055-9162-246f-8f44-e3efc21c9e14.mp4',
+                    question: "What\u2019s the number of the stool in the video?",
+                    type: "numerical",
+                    correct_answer: "2",
+                    company: "3RScan © TUM (Wald et al.)",
+                    license: "CC BY-NC-SA 4.0",
+                    link: "https://forms.gle/NvL5dvB4tSFrHfQH6"
+                },
+                {
+                    video: 'https://placehold.co/400x225/f0fdf4/16a34a?',//'qa_examples/object_count/4a9a43eb-7736-2874-862e-a4c23d88831f.mp4',
+                    question: "Count the number of the chair in the video.",
+                    type: "numerical",
+                    correct_answer: "18",
+                    company: "3RScan © TUM (Wald et al.)",
+                    license: "CC BY-NC-SA 4.0",
+                    link: "https://forms.gle/NvL5dvB4tSFrHfQH6"
+                },
+                {
+                    video: 'https://placehold.co/400x225/f0fdf4/16a34a?',//'qa_examples/object_count/baf0a8f0-26d4-2033-8948-52ae41fdd30f.mp4',
+                    question: "Count the number of the towel in the video.",
+                    type: "numerical",
+                    correct_answer: "3",
+                    company: "3RScan © TUM (Wald et al.)",
+                    license: "CC BY-NC-SA 4.0",
+                    link: "https://forms.gle/NvL5dvB4tSFrHfQH6"
+                }
+            ],
+            'object-local': [
+                {
+                    video: 'https://placehold.co/400x225/f0fdf4/16a34a?',//'qa_examples/object_local/5630cfda-12bf-2860-8511-9baf30eec4ad.mp4',
+                    question: "Detect the 3D bounding box of the chair at the dining table that is closest to the window which is closest to the table. Coordinate System Definition: X-axis points rightward, Y-axis points downward, and Z-axis points forward, the origin point is the position of the camera in the first video frame. The format of the answer is [x, y, z, l, w, h, pitch, yaw, roll]. Note: (1) x, y, z: the center of the object in the coordinate system, in centimeters. (2) l, w, h: the dimensions of the object along the XYZ axes, in centimeters, when the rotation angles are zeros. (3) pitch, yaw, roll: Euler angles representing rotations around the X, Y, and Z axes, respectively. Each angle lies between (0, 360). Select the most likely 3D bounding box.",
+                    type: "multiple_choice",
+                    options: [
+                        "[29, 8, 151, 328, 47, 224, 222, 14, 277]",
+                        "[9, -35, 119, 141, 93, 147, 234, 323, 224]",
+                        "[40, 4, 85, 75, 93, 30, 223, 16, 279]",
+                        "[-28, 2, 165, 59, 100, 49, 291, 314, 145]"
+                    ],
+                    correct_answer: "D",
+                    company: "3RScan © TUM (Wald et al.)",
+                    license: "CC BY-NC-SA 4.0",
+                    link: "https://forms.gle/NvL5dvB4tSFrHfQH6"
+                },
+                {
+                    video: 'qa_examples/object_local/scene-0576.mp4',
+                    question: "Given a video of 233 frames, at frame 150, based on the description a silver minivan, detect the 3D bounding box of the described object in the current frame camera coordinate system. Camera coordinate: X-axis points rightward, Y-axis points downward, and Z-axis points forward. The origin point is the current frame camera location. The format of the answer is [x, y, z, l, w, h, heading]. Note: (1) x, y, z: the center of the object in the coordinate system, in meters. (2) l, w, h: these are defined in the object\u2019s local coordinate system, l measures along the object\u2019s forward direction, w measures along the object\u2019s left-right direction, h measures along the object\u2019s vertical direction, in meters. (3) heading: it is the angle in the xz-plane (horizontal plane), measured counter-clockwise from the +z axis (camera forward) to the projection of the object\u2019s forward direction. It lies between (-180, 180). Select the most likely 3D bounding box. (Note: The frame rate of the video is 10fps)",
+                    type: "multiple_choice",
+                    options: [
+                        "[17.82, 0.94, 35.22, 5.24, 2.02, 1.89, 65]",
+                        "[3.19, 0.63, 10.94, 5.24, 2.02, 1.89, 120]",
+                        "[2.26, 0.66, 12.29, 1.06, 0.91, 1.91, -10]",
+                        "[-3.37, 0.6, 29.57, 0.68, 0.76, 1.94, -3]"
+                    ],
+                    correct_answer: "B",
+                    company: "nuScenes © Motional (Caesar et al.)",
+                    license: "CC BY-NC-SA 4.0",
+                    link: "https://www.nuscenes.org/terms-of-use"
+                },
+                {
+                    video: 'qa_examples/object_local/scene-0066.mp4',
+                    question: "Given a video of 226 frames, at frame 124, based on the description a silver sedan, detect the 3D bounding box of the described object in the current frame camera coordinate system. Camera coordinate: X-axis points rightward, Y-axis points downward, and Z-axis points forward. The origin point is the current frame camera location. The format of the answer is [x, y, z, l, w, h, heading]. Note: (1) x, y, z: the center of the object in the coordinate system, in meters. (2) l, w, h: these are defined in the object\u2019s local coordinate system, l measures along the object\u2019s forward direction, w measures along the object\u2019s left-right direction, h measures along the object\u2019s vertical direction, in meters. (3) heading: it is the angle in the xz-plane (horizontal plane), measured counter-clockwise from the +z axis (camera forward) to the projection of the object\u2019s forward direction. It lies between (-180, 180). Select the most likely 3D bounding box. (Note: The frame rate of the video is 10fps)",
+                    type: "multiple_choice",
+                    options: [
+                        "[-11.2, 0.92, 35.4, 7.93, 3.09, 2.98, 178]",
+                        "[-5.51, 1.16, 30.75, 0.45, 0.47, 1.5, -1]",
+                        "[2.85, 1.11, 75.44, 4.76, 2.15, 2.1, -89]",
+                        "[-2.52, 0.85, 13.27, 5.06, 2.11, 2.04, -2]"
+                    ],
+                    correct_answer: "D",
+                    company: "nuScenes © Motional (Caesar et al.)",
+                    license: "CC BY-NC-SA 4.0",
+                    link: "https://www.nuscenes.org/terms-of-use"
+                }
+            ],
+            'abs-distance': [
+                {
+                    video: 'https://placehold.co/400x225/f0fdf4/16a34a?',//'qa_examples/abs_distance/0a4b8ef6-a83a-21f2-8672-dce34dd0d7ca.mp4',
+                    question: "What is the shortest distance (in meters) between the suitcase and the chair, measured from their closest edges?",
+                    type: "numerical",
+                    correct_answer: "2.1",
+                    company: "3RScan © TUM (Wald et al.)",
+                    license: "CC BY-NC-SA 4.0",
+                    link: "https://forms.gle/NvL5dvB4tSFrHfQH6"
+                },
+                {
+                    video: 'qa_examples/abs_distance/scene-0715.mp4',
+                    question: "Given a video of 349 frames, at frame 60, what is the direct distance between man wearing white shirt and black backpack in region (0.91,0.44,0.98,0.68)[Note: Bounding box region, coordinates are normalized (0~1), format (x1,y1,x2,y2) with (0,0)=top-left] and the camera (in meters)? (Note: The frame rate of the video is 10fps)",
+                    type: "numerical",
+                    correct_answer: "12.0",
+                    company: "nuScenes © Motional (Caesar et al.)",
+                    license: "CC BY-NC-SA 4.0",
+                    link: "https://www.nuscenes.org/terms-of-use"
+                },
+                {
+                    video: 'qa_examples/abs_distance/scene-0686.mp4',
+                    question: "Given a video of 312 frames, at frame 118, what is the direct distance between a black sedan in region (0.81,0.49,1.00,0.61)[Note: Bounding box region, coordinates are normalized (0~1), format (x1,y1,x2,y2) with (0,0)=top-left] and the camera (in meters)? (Note: The frame rate of the video is 10fps)",
+                    type: "numerical",
+                    correct_answer: "23.3",
+                    company: "nuScenes © Motional (Caesar et al.)",
+                    license: "CC BY-NC-SA 4.0",
+                    link: "https://www.nuscenes.org/terms-of-use"
+                }
+            ],
+            'rel-distance': [
+                {
+                    video: 'https://placehold.co/400x225/f0fdf4/16a34a?',//'qa_examples/rel_distance/8eabc426-5af7-2f32-87bb-a16609b099e3.mp4',
+                    question: "From the closest point of each object, which object (door, printer, chair, trash bin) is at the minimum distance to the refrigerator?",
+                    type: "multiple_choice",
+                    options: [
+                        "trash bin",
+                        "chair",
+                        "printer",
+                        "door"
+                    ],
+                    correct_answer: "B",
+                    company: "3RScan © TUM (Wald et al.)",
+                    license: "CC BY-NC-SA 4.0",
+                    link: "https://forms.gle/NvL5dvB4tSFrHfQH6"
+                },
+                {
+                    video: 'https://placehold.co/400x225/f0fdf4/16a34a?',//'qa_examples/rel_distance/38770ca3-86d7-27b8-85a7-7d840ffdec6a.mp4',
+                    question: "Among the listed objects (backpack, basket, microwave, table), which one is the nearest to the cutting board?",
+                    type: "multiple_choice",
+                    options: [
+                        "table",
+                        "basket",
+                        "backpack",
+                        "microwave"
+                    ],
+                    correct_answer: "A",
+                    company: "3RScan © TUM (Wald et al.)",
+                    license: "CC BY-NC-SA 4.0",
+                    link: "https://forms.gle/NvL5dvB4tSFrHfQH6"
+                },
+                {
+                    video: 'qa_examples/rel_distance/scene-0513.mp4',
+                    question: "Given a video of 285 frames, at frame 239, measuring from the closest point of each object, which of those objects (a white van in region (0.81,0.44,1.00,0.75)[Note: Bounding box region, coordinates are normalized (0~1), format (x1,y1,x2,y2) with (0,0)=top-left],a gray suv in region (0.18,0.50,0.33,0.59), a white pickup truck in region (0.58,0.50,0.68,0.56), a black sedan in region (0.00,0.52,0.14,0.67)) is closest to the camera? (Note: The frame rate of the video is 10fps)",
+                    type: "multiple_choice",
+                    options: [
+                        "a gray suv in region (0.18,0.50,0.33,0.59)",
+                        "a black sedan in region (0.00,0.52,0.14,0.67)",
+                        "a white pickup truck in region (0.58,0.50,0.68,0.56)",
+                        "a white van in region (0.81,0.44,1.00,0.75)"
+                    ],
+                    correct_answer: "D",
+                    company: "nuScenes © Motional (Caesar et al.)",
+                    license: "CC BY-NC-SA 4.0",
+                    link: "https://www.nuscenes.org/terms-of-use"
+                }
+            ], 
+            'rel-orientation': [
+                {
+                    video: 'qa_examples/rel_orientation/scene-0731.mp4',
+                    question: "Given a video of 349 frames, at frame 114, is the woman walking on the road with a backpack in region (0.37,0.49,0.46,0.74)[Note: Bounding box region, coordinates are normalized (0~1), format (x1,y1,x2,y2) with (0,0)=top-left] to the white suv in region (0.10,0.48,0.31,0.63)'s back-right, back-left, front-right, or front-left? Assume the front of the white suv in region (0.10,0.48,0.31,0.63) is facing directly forward. (Note: The frame rate of the video is 10fps)",
+                    type: "multiple_choice",
+                    options: [
+                        "back-left",
+                        "back-right",
+                        "front-left",
+                        "front-right"
+                    ],
+                    correct_answer: "D",
+                    company: "nuScenes © Motional (Caesar et al.)",
+                    license: "CC BY-NC-SA 4.0",
+                    link: "https://www.nuscenes.org/terms-of-use"
+                },
+                {
+                    video: 'qa_examples/rel_orientation/scene-0232.mp4',
+                    question: "Given a video of 233 frames, at frame 25, is the man wearing black jacket and black pants in region (0.30,0.51,0.34,0.61)[Note: Bounding box region, coordinates are normalized (0~1), format (x1,y1,x2,y2) with (0,0)=top-left] to the white minivan in region (0.64,0.52,0.77,0.64)'s back-right, back-left, front-right, or front-left? Assume the front of the white minivan in region (0.64,0.52,0.77,0.64) is facing directly forward. (Note: The frame rate of the video is 10fps)",
+                    type: "multiple_choice",
+                    options: [
+                        "back-left",
+                        "front-left",
+                        "front-right",
+                        "back-right"
+                    ],
+                    correct_answer: "A",
+                    company: "nuScenes © Motional (Caesar et al.)",
+                    license: "CC BY-NC-SA 4.0",
+                    link: "https://www.nuscenes.org/terms-of-use"
+                },
+                {
+                    video: 'https://placehold.co/400x225/f0fdf4/16a34a?',//'qa_examples/rel_orientation/0ad2d395-79e2-2212-9b89-83581fad7390.mp4',
+                    question: "From the perspective of standing at the tv and looking toward the window, where is the nightstand located relative to me: front-left, front-right, back-left, or back-right?",
+                    type: "multiple_choice",
+                    options: [
+                        "front-right",
+                        "back-left",
+                        "front-left",
+                        "back-right"
+                    ],
+                    correct_answer: "C",
+                    company: "3RScan © TUM (Wald et al.)",
+                    license: "CC BY-NC-SA 4.0",
+                    link: "https://forms.gle/NvL5dvB4tSFrHfQH6"
+                }
+            ], 
+            'ego-reasoning': [
+                {
+                    images: [
+                        'qa_examples/ego_reasoning/n015-2018-07-24-11-13-19+0800__CAM_FRONT__1532402182412460.jpg',
+                        'qa_examples/ego_reasoning/n015-2018-07-24-11-13-19+0800__CAM_FRONT__1532402190012460.jpg'
+                    ],
+                    question: "Based on the continous images, in which direction is the camera rotating?",
+                    type: "multiple_choice",
+                    options: ["Left", "Right", "Up", "Down"],
+                    correct_answer: "A",
+                    company: "nuScenes © Motional (Caesar et al.)",
+                    license: "CC BY-NC-SA 4.0",
+                    link: "https://www.nuscenes.org/terms-of-use"
+                },  
+                {
+                    images: [
+                        'qa_examples/ego_reasoning/n015-2018-07-24-11-13-19+0800__CAM_FRONT__1532402182412460.jpg',
+                        'qa_examples/ego_reasoning/n015-2018-07-24-11-13-19+0800__CAM_FRONT__1532402183512460.jpg'
+                    ],
+                    question: "With the camera facing forward to take the two images, assuming a person facing backward, relative to the person, in which direction is yellow car moving?",
+                    type: "multiple_choice",
+                    options: ["Left", "Right", "Backward", "Forward"],
+                    correct_answer: "B",
+                    company: "nuScenes © Motional (Caesar et al.)",
+                    license: "CC BY-NC-SA 4.0",
+                    link: "https://www.nuscenes.org/terms-of-use"
+                },
+                {
+                    images: [
+                        'qa_examples/ego_reasoning/image1_n008-2018-08-28-15-47-40-0400__CAM_FRONT__1535486194412404.jpg',
+                        'qa_examples/ego_reasoning/image2_n008-2018-08-28-15-47-40-0400__CAM_FRONT__1535486197362404.jpg'
+                    ],
+                    question: "Based on the continuous images, in which direction is the camera rotating?",
+                    type: "multiple_choice",
+                    options: ["Left", "Right", "Up", "Down"],
+                    correct_answer: "A",
+                    company: "nuScenes © Motional (Caesar et al.)",
+                    license: "CC BY-NC-SA 4.0",
+                    link: "https://www.nuscenes.org/terms-of-use"
+                }
+            ],
+            'appearance-order': [
+                {
+                    video: 'https://placehold.co/400x225/f0fdf4/16a34a?',//'qa_examples/appearance_order/02b33df9-be2b-2d54-9062-1253be3ce186.mp4',
+                    question: "In what sequence do the following categories first appear in the video: towel, door, mirror, basket?",
+                    type: "multiple_choice",
+                    options: [
+                    "towel, basket, mirror, door",
+                    "towel, basket, door, mirror",
+                    "towel, door, mirror, basket",
+                    "towel, mirror, door, basket"
+                    ],
+                    correct_answer: "B",
+                    company: "3RScan © TUM (Wald et al.)",
+                    license: "CC BY-NC-SA 4.0",
+                    link: "https://forms.gle/NvL5dvB4tSFrHfQH6"
+                },
+                {
+                    video: 'https://placehold.co/400x225/f0fdf4/16a34a?',//'qa_examples/appearance_order/0958224a-e2c2-2de1-950b-a53ea2cb660d.mp4',
+                    question: "List the order in which each of these categories window, chair, trash bin and monitor makes its first appearance in the video.",
+                    type: "multiple_choice",
+                    options: [
+                        "chair, trash bin, window, monitor",
+                        "chair, monitor, trash bin, window",
+                        "window, chair, monitor, trash bin",
+                        "chair, monitor, window, trash bin"
+                    ],
+                    correct_answer: "D",
+                    company: "3RScan © TUM (Wald et al.)",
+                    license: "CC BY-NC-SA 4.0",
+                    link: "https://forms.gle/NvL5dvB4tSFrHfQH6"
+                },
+                {
+                    video: 'https://placehold.co/400x225/f0fdf4/16a34a?',//'qa_examples/appearance_order/c12890d1-d3df-2d0d-868c-f9a62ca423f7.mp4',
+                    question: "List the order in which each of these categories microwave, towel, table, and basket makes its first appearance in the video.",
+                    type: "multiple_choice",
+                    options: [
+                        "microwave, basket, table, towel",
+                        "table, towel, basket, microwave",
+                        "microwave, towel, table, basket",
+                        "microwave, towel, basket, table"
+                    ],
+                    correct_answer: "D",
+                    company: "3RScan © TUM (Wald et al.)",
+                    license: "CC BY-NC-SA 4.0",
+                    link: "https://forms.gle/NvL5dvB4tSFrHfQH6"
+                }
+            ], 
+            'spatial-memory': [
+                {
+                    video: 'qa_examples/spatial_memory/HoloAssist_0079_5mins_01.mp4',
+                    question: "How many times did the person touch the keyboard and mouse in the video?",
+                    type: "multiple_choice",
+                    options: [
+                    "(0, 0)",
+                    "(1, 1)",
+                    "(1, 0)",
+                    "(0, 1)"
+                    ],
+                    correct_answer: "A",
+                    company: "HoloAssist © Microsoft Research",
+                    license: "CDLAv2",
+                    link: "https://holoassist.github.io/"
+                },
+                {
+                    video: 'qa_examples/spatial_memory/HoloAssist_0081.mp4',
+                    question: "With the person’s viewpoint of the desk as front, which description is correct about the usage of the colorful controllers?",
+                    type: "multiple_choice",
+                    options: [
+                        "Both red and blue ones are installed on the tablet, 2 times.",
+                        "Both red and blue ones are installed on 3 different devices, 1 time on each device.",
+                        "Both red and blue ones are installed on 2 different devices, 1 time on each device.",
+                        "Both red and blue ones are installed on 2 different devices, 2 times on each device."
+                    ],
+                    correct_answer: "B",
+                    company: "HoloAssist © Microsoft Research",
+                    license: "CDLAv2",
+                    link: "https://holoassist.github.io/"
+                },
+                {
+                    video: 'qa_examples/spatial_memory/HoloAssist_0085.mp4',
+                    question: "How many times did the person rotate the rolling cart while disassembling?",
+                    type: "multiple_choice",
+                    options: [
+                        "2",
+                        "3",
+                        "4",
+                        "5"
+                    ],
+                    correct_answer: "4",
+                    company: "HoloAssist © Microsoft Research",
+                    license: "CDLAv2",
+                    link: "https://holoassist.github.io/"
+                }
+            ], 
+            'state-change': [
+                {
+                    video: 'https://placehold.co/400x225/f0fdf4/16a34a?text=0WNEP',//'qa_examples/state_change/0WNEP.mp4',
+                    question: "What happened to the person\u2019s grey shirt?",
+                    type: "multiple_choice",
+                    options: [
+                    "He took it off and put on a shirt with a picture.",
+                    "He put a picture on top of his shirt.",
+                    "He wore a grey shirt with picture the entire time.",
+                    "The person did not wear a grey shirt."
+                    ],
+                    correct_answer: "C",
+                    company: "Charades-Ego © CMU/AI2 (Sigurdsson et al.)",
+                    license: "Research License",
+                    link: "https://prior.allenai.org/projects/charades-ego"
+                },
+                {
+                    video: 'https://placehold.co/400x225/f0fdf4/16a34a?text=0YOD9',//'qa_examples/state_change/0YOD9.mp4',
+                    question: "What happened to the broom?",
+                    type: "multiple_choice",
+                    options: [
+                        "The person held it the entire time.",
+                        "The person first held it, then put it on the couch.",
+                        "The person first held it and then dropped it on the floor.",
+                        "There is no broom in the video."
+                    ],
+                    correct_answer: "A",
+                    company: "Charades-Ego © CMU/AI2 (Sigurdsson et al.)",
+                    license: "Research License",
+                    link: "https://prior.allenai.org/projects/charades-ego"
+                },
+                {
+                    video: 'https://placehold.co/400x225/f0fdf4/16a34a?text=1MJZ8',//'qa_examples/state_change/1MJZ8.mp4',
+                    question: "How many new boxes did the person put in the pantry?",
+                    type: "multiple_choice",
+                    options: [
+                        "Three",
+                        "Two",
+                        "One",
+                        "Four"
+                    ],
+                    correct_answer: "A",
+                    company: "Charades-Ego © CMU/AI2 (Sigurdsson et al.)",
+                    license: "Research License",
+                    link: "https://prior.allenai.org/projects/charades-ego"
+                }
+            ], 
+            'navigation': [
+                {
+                    video: 'qa_examples/navigation/0qw2HOHjiyU.mp4',
+                    question: "You are a robot beginning at office1 facing hallway2. You want to navigate to bathroom2. You will perform the following actions (Note: for each [please fill in], choose either A, B, C, D or E): 1. go forward towards the wall that has one frame. 2. turn right. 3. [please fill in]. 4. go forward towards the curtains in bedroom2. 5. [please fill in]. 6. go forward towards the wall that has a frame. 7. turn left. 8. go forward towards the bathtub. You have reached the final destination.",
+                    type: "sequence",
+                    options: [
+                    "turn left.",
+                    "turn right",
+                    "turn 180 degrees",
+                    "go upstairs"
+                    ],
+                    correct_answer: ["A", "A"],
+                    company: "RoomTour3D © CMU (Guhur et al.)",
+                    license: "CC BY-SA 4.0",
+                    link: "https://huggingface.co/datasets/roomtour3d/room_tour_video_3fps"
+                },
+                {
+                    video: 'qa_examples/navigation/1isvIBZ897c.mp4',
+                    question: "You are a robot beginning at livingroom1 facing the kitchen. You want to navigate to livingroom3. You will perform the following actions (Note: for each [please fill in], choose either A, B, C, D or E): 1. go towards the kitchen. 2. [please fill in]. 3. go towards the couch. 4. [please fill in]. 5. go forward. 6. go through the door. 7. go forward towards the navy sofa. You have reached the final destination.",
+                    type: "sequence",
+                    options: [
+                    "turn left.",
+                    "turn right",
+                    "turn 180 degrees",
+                    "go upstairs"
+                    ],
+                    correct_answer: ["A", "B"],
+                    company: "RoomTour3D © CMU (Guhur et al.)",
+                    license: "CC BY-SA 4.0",
+                    link: "https://huggingface.co/datasets/roomtour3d/room_tour_video_3fps"
+                },
+                {
+                    video: 'qa_examples/navigation/00JAWNvUCrA.mp4',
+                    question: "You are a robot beginning at terrace1 facing the pool. You want to navigate to bedroom1. You will perform the following actions (Note: for each [please fill in], choose either A, B, C, D or E): 1. turn 180 degrees. 2. go straight towards the microwave. 3. turn right. 4. [please fill in]. 5. go forward past the dining table on the left. 6. go forward. 7. [please fill in]. You have reached the final destination.",
+                    type: "sequence",
+                    options: [
+                    "turn left.",
+                    "turn right",
+                    "turn 180 degrees",
+                    "go upstairs"
+                    ],
+                    correct_answer: ["A", "A"],
+                    company: "RoomTour3D © CMU (Guhur et al.)",
+                    license: "CC BY-SA 4.0",
+                    link: "https://huggingface.co/datasets/roomtour3d/room_tour_video_3fps"
+                }
+            ], 
+            'affordance': [
+                {
+                    video: 'https://placehold.co/400x225/f0fdf4/16a34a?',//'qa_examples/affordance/a0905ffc-66f7-2272-9f05-966bab3ce8ad.mp4',
+                    question: "Based on the video, If I want to perform computing tasks as using a desktop, but with a portable and compact design, where can I find such an object to achieve my purpose?",
+                    type: "multiple_choice",
+                    options: [
+                    "On the couch.",
+                    "Below the table.",
+                    "On the bed.",
+                    "Above the lamp."
+                    ],
+                    correct_answer: "C",
+                    company: "3RScan © TUM (Wald et al.)",
+                    license: "CC BY-NC-SA 4.0",
+                    link: "https://forms.gle/NvL5dvB4tSFrHfQH6"
+                },
+                {
+                    video: 'https://placehold.co/400x225/f0fdf4/16a34a?',//'qa_examples/affordance/0988ea72-eb32-2e61-8344-99e2283c2728.mp4',
+                    question: "Based on the video, If I want to boil water quickly and safely, where can I find such an object to achieve my purpose?",
+                    type: "multiple_choice",
+                    options: [
+                        "Above the table lamp.",
+                        "Near the kitchen cabinet.",
+                        "Near the microwave.",
+                        "Above the fridge."
+                    ],
+                    correct_answer: "B",
+                    company: "3RScan © TUM (Wald et al.)",
+                    license: "CC BY-NC-SA 4.0",
+                    link: "https://forms.gle/NvL5dvB4tSFrHfQH6"
+                },
+                {
+                    video: 'https://placehold.co/400x225/f0fdf4/16a34a?',//'qa_examples/affordance/7747a521-9431-24e8-84e7-7e01eaee08c4.mp4',
+                    question: "Based on the video, If I want to pack clothing and personal belongings for traveling, where can I find such an object to achieve my purpose?",
+                    type: "multiple_choice",
+                    options: [
+                        "Near the table.",
+                        "Below the bed.",
+                        "Below the chair.",
+                        "Near the window."
+                    ],
+                    correct_answer: "A",
+                    company: "3RScan © TUM (Wald et al.)",
+                    license: "CC BY-NC-SA 4.0",
+                    link: "https://forms.gle/NvL5dvB4tSFrHfQH6"
+                }
+            ], 
+            'action-prediction': [
+                {
+                    video: 'qa_examples/action_prediction/ADL_0001_10mins_03__01__end-0324_minus45s.mp4',
+                    question: "What is the person going to do?",
+                    type: "multiple_choice",
+                    options: [
+                    "He will sit down and wait without using the machine.",
+                    "He will pour laundry detergent on top of his clothes.",
+                    "He will put his card into the laundry machine’s slot and press the buttons.",
+                    "He will use the blue machine to check his balance."
+                    ],
+                    correct_answer: "C",
+                    company: "UIUC ChenLab (YouHome Dataset)",
+                    license: "Apache-2.0",
+                    link: "https://github.com/UIUC-ChenLab/YouHome-Dataset"
+                },
+                {
+                    video: 'qa_examples/action_prediction/ADL_0001_10mins_03__02__end-0850_minus45s.mp4',
+                    question: "What is the person going to do?",
+                    type: "multiple_choice",
+                    options: [
+                        "He will turn the devices on and play games.",
+                        "He will pet the cat sitting nearby.",
+                        "He will fold the laundry on the couch.",
+                        "He will turn on the television to watch a show."
+                    ],
+                    correct_answer: "A",
+                    company: "UIUC ChenLab (YouHome Dataset)",
+                    license: "Apache-2.0",
+                    link: "https://github.com/UIUC-ChenLab/YouHome-Dataset"
+                },
+                {
+                    video: 'qa_examples/action_prediction/ADL_0002_10mins_01__02__end-0441_minus45s.mp4',
+                    question: "What is the person going to do?",
+                    type: "multiple_choice",
+                    options: [
+                        "He will pour the juice into the sink.",
+                        "He will mix the juice with another drink.",
+                        "He will put it in a blender as a base.",
+                        "He will drink the orange juice."
+                    ],
+                    correct_answer: "D",
+                    company: "UIUC ChenLab (YouHome Dataset)",
+                    license: "Apache-2.0",
+                    link: "https://github.com/UIUC-ChenLab/YouHome-Dataset"
+                }
+            ], 
+            'physical-plausibility': [
+                {
+                    video: 'qa_examples/physical_plausibility/0000.mp4',
+                    question: "Which option violates physical common sense the most in this video?",
+                    type: "multiple_choice",
+                    options: [
+                    "The rider\u2019s leg appears fused with the scooter handle.",
+                    "The scooter rolls forward while both wheels remain perfectly still.",
+                    "The scooter\u2019s shadow peels off the ground and climbs the wall.",
+                    "The rider and scooter briefly levitate together above the pavement."
+                    ],
+                    correct_answer: "A",
+                    company: "VideoPhy © UW/AI2 (Xie et al.)",
+                    license: "MIT",
+                    link: "https://huggingface.co/datasets/videophysics/videophy2_train"
+                },
+                {
+                    video: 'qa_examples/physical_plausibility/0020.mp4',
+                    question: "Which option violates physical common sense the most in this video?",
+                    type: "multiple_choice",
+                    options: [
+                        "The bottle pours upward from the cup, refilling itself without contact.",
+                        "The cup fills while turned upside down with no liquid pooling beneath it.",
+                        "The cup fills earlier than how it should be.",
+                        "The bottle neck passes through the cup wall without collision or deformation."
+                    ],
+                    correct_answer: "C",
+                    company: "VideoPhy © UW/AI2 (Xie et al.)",
+                    license: "MIT",
+                    link: "https://huggingface.co/datasets/videophysics/videophy2_train"
+                },
+                {
+                    video: 'qa_examples/physical_plausibility/0023.mp4',
+                    question: "Which option violates physical common sense the most in this video?",
+                    type: "multiple_choice",
+                    options: [
+                        "When tapped, the bottle\u2019s shape changes.",
+                        "The bottle teleports a half meter to the side between frames while the hand remains continuous.",
+                        "Sound from the tap causes the liquid inside to levitate and form a rigid column.",
+                        "The bottle neck passes through the cup wall without collision or deformation."
+                    ],
+                    correct_answer: "A",
+                    company: "VideoPhy © UW/AI2 (Xie et al.)",
+                    license: "MIT",
+                    link: "https://huggingface.co/datasets/videophysics/videophy2_train"
+                }
+            ], 
+        };
+
+         // Current active section and subtask
+         let activeSection = null;
+        let activeSubtask = null;
+
+        // Event listeners for benchmark sections
+        document.querySelectorAll('[data-section]').forEach(section => {
+            section.addEventListener('click', function() {
+                const sectionId = this.getAttribute('data-section');
+                if (activeSection === sectionId) {
+                    // Close the section
+                    activeSection = null;
+                    document.getElementById('subtasks-content').classList.add('hidden');
+                    document.getElementById('qa-examples-section').classList.add('hidden');
+                    // Rotate chevron back
+                    this.querySelector('i').classList.remove('rotate-180');
+                } else {
+                    // Open the section
+                    if (activeSection) {
+                        // Close previous section
+                        document.querySelector(`[data-section="${activeSection}"] i`).classList.remove('rotate-180');
+                    }
+                    activeSection = sectionId;
+                    // Rotate chevron
+                    this.querySelector('i').classList.add('rotate-180');
+                    // Show subtasks
+                    showSubtasks(sectionId);
+                }
+            });
+        });
+
+        function showSubtasks(sectionId) {
+            const subtasks = subtasksData[sectionId];
+            const container = document.getElementById('subtasks-content');
+            container.innerHTML = '';
+            
+            subtasks.forEach(subtask => {
+                const subtaskElement = document.createElement('div');
+                subtaskElement.className = 'p-3 rounded-lg bg-white/60 backdrop-blur-sm border border-gray-200 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 cursor-pointer transition-all duration-200 shadow-md';
+                subtaskElement.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <span class="text-gray-900 font-medium">${subtask.name}</span>
+                            <p class="text-gray-600 text-sm mt-1">${subtask.description}</p>
+                        </div>
+                        <i class="fas fa-eye text-gray-400 text-sm"></i>
+                    </div>
+                `;
+                subtaskElement.addEventListener('click', () => showQAExamples(subtask.id, subtask.name));
+                container.appendChild(subtaskElement);
+            });
+            
+            container.classList.remove('hidden');
+        }
+
+        function showQAExamples(subtaskId, subtaskName) {
+            const qaSection = document.getElementById('qa-examples-section');
+            const qaGrid = document.getElementById('qa-examples-grid');
+            const qaTitle = document.getElementById('qa-title');
+            
+            qaTitle.textContent = subtaskName;
+            qaGrid.innerHTML = '';
+            
+            const examples = qaExamplesData[subtaskId] || [];
+            if (examples.length === 0) {
+                qaGrid.innerHTML = `
+                    <div class="text-center py-8 col-span-3">
+                        <i class="fas fa-comment text-gray-400 text-3xl mb-3"></i>
+                        <p class="text-gray-500">No QA examples available for this subtask yet.</p>
+                    </div>
+                `;
+            } else {
+                examples.forEach((example, index) => {
+                    const exampleElement = document.createElement('div');
+                    exampleElement.className = 'bg-white/60 backdrop-blur-sm rounded-lg p-4 border border-gray-200 hover:shadow-lg transition-shadow';
+                    
+                    let mediaHtml = '';
+                    if (example.images && example.images.length === 2) {
+                        // Egocentric reasoning with two images - horizontal layout with labels
+                        mediaHtml = `
+                            <div class="two-image-container">
+                                <div class="image-wrapper">
+                                    <img src="${example.images[0]}" alt="Image 1">
+                                    <div class="label">Image 1</div>
+                                </div>
+                                <div class="image-wrapper">
+                                    <img src="${example.images[1]}" alt="Image 2">
+                                    <div class="label">Image 2</div>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between px-1 mt-1 text-[10px] md:text-xs text-gray-500 font-sans">
+                            <div class="flex items-center">
+                                <i class="fas fa-copyright mr-1"></i>
+                                <span>${example.company}</span>
+                            </div>
+                            <a href="${example.link}" 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            class="flex items-center bg-gray-100 hover:bg-gray-200 hover:text-blue-600 px-1.5 py-0.5 rounded border border-gray-200 transition-colors">
+                                <i class="fas fa-certificate mr-1 scale-75"></i>
+                                ${example.license}
+                            </a>
+                            </div>
+                        `;
+                    } else {
+                        // Single video/image
+                        mediaHtml = `
+                            <div class="relative mb-3">
+                                <video controls autoplay muted loop playsinline src="${example.video}" alt="QA Example ${index + 1}" class="w-full object-cover rounded-lg">
+                                <div class="absolute inset-0 bg-black/10 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-play text-white/80 text-lg"></i>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between px-1 mt-1 text-[10px] md:text-xs text-gray-500 font-sans">
+                            <div class="flex items-center">
+                                <i class="fas fa-copyright mr-1"></i>
+                                <span>${example.company}</span>
+                            </div>
+                            <a href="${example.link}" 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            class="flex items-center bg-gray-100 hover:bg-gray-200 hover:text-blue-600 px-1.5 py-0.5 rounded border border-gray-200 transition-colors">
+                                <i class="fas fa-certificate mr-1 scale-75"></i>
+                                ${example.license}
+                            </a>
+                            </div>
+                        `;
+                    }
+                    
+                    // Format correct answer based on type
+                    let correctAnswerHtml = '';
+                    if (example.type === "sequence") {
+                        // For sequence questions, show the correct sequence with arrows
+                        correctAnswerHtml = `
+                            <div class="correct-sequence mt-1">
+                                ${example.correct_answer.map((answer, idx) => 
+                                    `<div class="correct-sequence-item">${answer}</div>`
+                                ).join('')}
+                            </div>
+                        `;
+                    } else if (example.type === "multiple_choice" && Array.isArray(example.correct_answer)) {
+                        // For multiple correct answers (non-sequence)
+                        correctAnswerHtml = `
+                            <div class="space-y-1 mt-1">
+                                ${example.correct_answer.map(answer => 
+                                    `<div class="text-green-600 text-sm">${answer}</div>`
+                                ).join('')}
+                            </div>
+                        `;
+                    } else if (example.type === "numerical") {
+                        // Numerical answer
+                        correctAnswerHtml = `<span class="text-green-600 font-mono">${example.correct_answer}</span>`;
+                    } else {
+                        // Single choice answer
+                        correctAnswerHtml = `<span class="text-green-600">${example.correct_answer}</span>`;
+                    }
+                    
+                    // Create options list with letters (only for multiple choice)
+                    let optionsHtml = '';
+                    if (example.options) {
+                        optionsHtml = '<div class="options-list">';
+                        example.options.forEach((option, idx) => {
+                            const letter = String.fromCharCode(65 + idx); // A, B, C, D, E...
+                            optionsHtml += `<div class="option-item"><span class="option-letter">${letter}</span>${option}</div>`;
+                        });
+                        optionsHtml += '</div>';
+                    }
+                    
+                    exampleElement.innerHTML = `
+                        ${mediaHtml}
+                        <div class="space-y-2">
+                            <div>
+                                <h4 class="text-xs font-semibold text-gray-600 mb-1">Question</h4>
+                                <p class="text-gray-900 text-sm">${example.question}</p>
+                            </div>
+                            ${optionsHtml ? `<div>
+                                <h4 class="text-xs font-semibold text-gray-600 mb-1">Options</h4>
+                                ${optionsHtml}
+                            </div>` : ''}
+                            <div>
+                                <h4 class="text-xs font-semibold text-gray-600 mb-1">Correct Answer</h4>
+                                ${correctAnswerHtml}
+                            </div>
+                        </div>
+                    `;
+                    qaGrid.appendChild(exampleElement);
+                });
+            }
+            
+            qaSection.classList.remove('hidden');
+        }
+    </script>
+    <script>
+        // Carousel functionality
+        let currentCase = 0;
+        const totalCases = 4;
+        const caseItems = document.querySelectorAll('.case-item');
+        const indicators = document.querySelectorAll('.carousel-indicator');
+        const prevButton = document.getElementById('prev-case');
+        const nextButton = document.getElementById('next-case');
+
+        function updateCarousel() {
+            // Hide all case items
+            caseItems.forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Show current case item
+            caseItems[currentCase].classList.add('active');
+            
+            // Update indicators
+            indicators.forEach((indicator, index) => {
+                if (index === currentCase) {
+                    indicator.classList.add('active');
+                } else {
+                    indicator.classList.remove('active');
+                }
+            });
+            
+            // Update button states
+            prevButton.disabled = currentCase === 0;
+            nextButton.disabled = currentCase === totalCases - 1;
+        }
+
+        // Event listeners for navigation buttons
+        prevButton.addEventListener('click', () => {
+            if (currentCase > 0) {
+                currentCase--;
+                updateCarousel();
+            }
+        });
+
+        nextButton.addEventListener('click', () => {
+            if (currentCase < totalCases - 1) {
+                currentCase++;
+                updateCarousel();
+            }
+        });
+
+        // Event listeners for indicators
+        indicators.forEach((indicator, index) => {
+            indicator.addEventListener('click', () => {
+                currentCase = index;
+                updateCarousel();
+            });
+        });
+
+        // Initialize carousel
+        updateCarousel();
+    </script>
+</body>
+</html>
+
