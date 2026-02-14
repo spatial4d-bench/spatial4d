@@ -14,134 +14,697 @@
                 extend: {
                     backgroundImage: {
                             // 整体背景：从淡雾蓝渐变到柔和的灰蓝色（不再刺眼）
-                            'gradient-background': 'linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%)',
+                            'gradient-background': 'linear-gradient(180deg, #ffffff 0%, #f9fafb 25%, #f3f4f6 100%)',
                             
                             // 卡片背景：避开纯白，采用“纸质感”的极浅灰色，底部略微带点蓝灰
-                            'gradient-card': 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)'
+                            'gradient-card': 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.9) 100%)'
                         },
                         colors: {
-                            primary: '#1d4ed8',   // 深蓝色（比之前更沉稳）
-                            secondary: '#6d28d9', // 深紫色
-                            accent: '#4338ca',    // 深靛蓝
-                            light: '#e2e8f0',     // 浅灰色作为辅助色
-                            darkText: '#1e293b'   // 代替纯黑，使用深青灰色文字，更护眼
+                            primary: '#1e40af',
+                            secondary: '#7c3aed',
+                            accent: '#0891b2',
+                            light: '#f9fafb',
+                            darkText: '#1f2937'
                         }
                 }
             }
         }
     </script>
     <style>
-        /* 1. 字体继承：确保与网页全局字体完全一致 */
-        .release-table-wrapper {
-            font-family: inherit; 
-            margin-top: 20px;
-            overflow-x: auto; /* 适配手机端，防止横框溢出 */
-        }
+        * { box-sizing: border-box; }
 
-        /* 2. 横框与对齐：宽度会自动随父容器（container）调整 */
-        .release-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 2rem;
-            background-color: transparent; /* 保持与背景一致 */
-        }
-
-        .release-table th, 
-        .release-table td {
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 1px solid #ddd; /* 与大多数网页的分割线风格一致 */
-        }
-
-        .release-table th {
-            background-color: rgba(0,0,0,0.03); /* 轻微背景区分表头 */
-            font-weight: 600;
-        }
-
-        /* 3. 强调 Challenge 行 */
-        .highlight-row {
-            background-color: rgba(255, 193, 7, 0.05); /* 淡淡的金色提示 */
-        }
-        
-        .highlight-row td {
-            color: #d97706; /* 橙黄色系，醒目但不突兀 */
+        :root {
+            --primary: #1e3a8a;
+            --secondary: #0284c7;
+            --accent: #ec4899;
+            --text-main: #1f2937;
+            --text-secondary: #6b7280;
+            --bg-base: rgb(255, 255, 251);
+            --bg-section: #ffffff;
+            --border: rgba(30, 58, 138, 0.1);
         }
 
         body {
-            /* 英文数字会显示 Manrope，中文会显示 Huawei Sans */
-            font-family: 'Manrope', 'Huawei Sans', sans-serif;
-            font-variant-numeric: tabular-nums; /* 如果有表格数字需求，Manrope 表现极佳 */
-        }
-
-        /* 2. 核心：确保图标库不受全局字体的影响 */
-        /* Font Awesome 的类名通常以 fa- 开头，或者使用特定的类名 */
-        .fa, .fas, .far, .fab, .fa-solid, .fa-brands, .fa-regular {
-            font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands" !important;
-            /* 强制图标使用它自己的字体库 */
-        }
-
-        /* 可选：优化渲染效果 */
-        body {
+            font-family: 'Huawei Sans', 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: var(--text-main);
+            background-color: var(--bg-base);
+            min-height: 100vh;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
-            text-rendering: optimizeLegibility;
+            letter-spacing: 0.01em;
         }
+
+        .fa, .fas, .far, .fab, .fa-solid, .fa-brands, .fa-regular {
+            font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands" !important;
+        }
+
         .prose p {
             margin-bottom: 1rem;
-            line-height: 1.75;
+            line-height: 1.85;
+            color: #6b7280;
         }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.02em;
+        }
+
+        h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 1rem;
+            margin-top: 2rem;
+            letter-spacing: -0.01em;
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 0.75rem;
+            margin-top: 1.5rem;
+        }
+
+        /* Header */
+        header {
+            background: rgb(255, 255, 251);
+            border-bottom: 1px solid var(--border);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+        }
+
+        /* Resource Links */
+        .resource-link {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.5rem 0.75rem;
+            color: var(--text-main);
+            transition: all 0.3s ease;
+        }
+
+        .resource-link:hover {
+            background: rgba(30, 58, 138, 0.04);
+            border-color: var(--primary);
+            color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(30, 58, 138, 0.1);
+        }
+
+        .author-separator {
+            font-weight: 600;
+            color: #1f2937;
+        }
+
         .author-separator::after {
             content: ", ";
             margin: 0 0.25rem;
         }
+
         .author-separator:last-child::after {
             content: "";
         }
-        .gradient-text {
-            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        .card-hover:hover {
-            box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.15);
-            transform: translateY(-2px);
-        }
-        body {
-            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-        }
+
         .superscript {
-            font-size: 0.75em;
+            font-size: 0.65em;
             vertical-align: super;
             line-height: 0;
         }
+
+        .gradient-text {
+            background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 800;
+        }
+
+        /* Section styling for visual hierarchy */
+        section {
+            position: relative;
+        }
+
+        /* Abstract section - dark blue background */
+        section:nth-of-type(1) {
+            background: var(--primary);
+        }
+
+        section:nth-of-type(1) * {
+            color: #ffffff;
+        }
+
+        section:nth-of-type(1) p, section:nth-of-type(1) a {
+            color: #f1f5f9;
+        }
+
+        /* Overview section - white */
+        section:nth-of-type(2) {
+            background: #ffffff;
+        }
+
+        /* Leaderboard section - light gray */
+        section:nth-of-type(3) {
+            background: #f3f4f6;
+        }
+
+        /* Cards */
+        .bg-white\/70 {
+            background: #ffffff;
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        .card-hover {
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-hover::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, var(--secondary), var(--accent));
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .card-hover:hover {
+            transform: translateY(-12px);
+            box-shadow: 0 24px 48px rgba(30, 58, 138, 0.15);
+        }
+
+        .card-hover:hover::before {
+            opacity: 0.05;
+        }
+
+        /* Custom icon */
         .custom-icon {
-            width: 32px;
-            height: 32px;
-            background: linear-gradient(45deg, var(--primary), var(--secondary));
-            border-radius: 10px;
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, rgba(30, 58, 138, 0.12), rgba(2, 132, 199, 0.12));
+            border: none;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 8px;
+            transition: all 0.3s ease;
         }
+
+        .card-hover:hover .custom-icon {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            transform: scale(1.1) rotate(-5deg);
+        }
+
         .custom-icon svg {
-            width: 24px;
-            height: 24px;
-            stroke: rgb(18, 38, 223);
-            stroke-width: 2;
+            width: 28px;
+            height: 28px;
+            stroke: var(--primary);
+            stroke-width: 1.5;
             stroke-linecap: round;
             stroke-linejoin: round;
             fill: none;
         }
-        /* .attribute-icon { background: linear-gradient(135deg, #3b82f6, #0ea5e9); }
-        .semantic-icon { background: linear-gradient(135deg, #8b5cf6, #c084fc); }
-        .geometric-icon { background: linear-gradient(135deg, #10b981, #34d399); }
-        .spatiotemporal-icon { background: linear-gradient(135deg, #f59e0b, #f97316); }
-        .commonsense-icon { background: linear-gradient(135deg, #6366f1, #818cf8); }
-        .temporal-icon { background: linear-gradient(135deg, #ad306f, #911553); } */
-        
-        /* Spatial background pattern */
+
+        .card-hover:hover .custom-icon svg {
+            stroke: #ffffff;
+        }
+
+        /* Tables */
+        .release-table-wrapper {
+            font-family: inherit;
+            margin-top: 20px;
+            overflow-x: auto;
+        }
+
+        .release-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 2rem;
+        }
+
+        .release-table th,
+        .release-table td {
+            padding: 14px 16px;
+            text-align: left;
+            border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+        }
+
+        .release-table th {
+            background-color: var(--primary);
+            font-weight: 700;
+            color: #ffffff;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.08em;
+            border-bottom: 2px solid var(--secondary);
+        }
+
+        .release-table tr:hover {
+            background-color: rgba(30, 58, 138, 0.06);
+        }
+
+        .highlight-row {
+            background-color: rgba(251, 191, 36, 0.06);
+        }
+
+        .highlight-row td {
+            color: #d97706;
+        }
+
+        /* QA Examples Container */
+        .qa-examples-container {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* QA Card styling */
+        .qa-card {
+            background: #ffffff;
+            border: none;
+            border-radius: 12px;
+            padding: 1rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .qa-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, var(--secondary), var(--accent));
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .qa-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 16px 32px rgba(30, 58, 138, 0.12);
+        }
+
+        .qa-card:hover::before {
+            opacity: 0.03;
+        }
+
+        /* Image hover effect */
+        .image-hover {
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            cursor: pointer;
+        }
+
+        .image-hover:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 16px 32px rgba(30, 58, 138, 0.15);
+        }
+
+        /* Case carousel */
+        .case-carousel {
+            position: relative;
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        .case-item {
+            display: none;
+            padding: 1.75rem;
+            border: none;
+            border-radius: 12px;
+            background: #ffffff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .case-item::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, var(--secondary), var(--accent));
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .case-item:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 16px 32px rgba(30, 58, 138, 0.12);
+        }
+
+        .case-item:hover::before {
+            opacity: 0.03;
+        }
+
+        .case-item.active {
+            display: block;
+            animation: fadeInUp 0.4s ease;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .case-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            color: #1f2937;
+        }
+
+        .case-question {
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+            line-height: 1.6;
+            color: #6b7280;
+        }
+
+        .case-model-response {
+            background: rgba(239, 68, 68, 0.06);
+            border: none;
+            border-left: 3px solid var(--accent);
+            border-radius: 8px;
+            padding: 0.875rem;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+            color: #6b7280;
+            transition: all 0.3s ease;
+        }
+
+        .case-model-response:hover {
+            background: rgba(239, 68, 68, 0.08);
+        }
+
+        .case-correct-answer {
+            background: rgba(34, 197, 94, 0.06);
+            border: none;
+            border-left: 3px solid var(--secondary);
+            border-radius: 8px;
+            padding: 0.875rem;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+            color: #6b7280;
+            transition: all 0.3s ease;
+        }
+
+        .case-correct-answer:hover {
+            background: rgba(34, 197, 94, 0.08);
+        }
+
+        .case-analysis {
+            background: rgba(30, 58, 138, 0.04);
+            border: none;
+            border-left: 3px solid var(--primary);
+            border-radius: 8px;
+            padding: 0.875rem;
+            font-size: 0.95rem;
+            color: #4b5563;
+            transition: all 0.3s ease;
+        }
+
+        .case-analysis:hover {
+            background: rgba(30, 58, 138, 0.06);
+        }
+
+        .case-model-name {
+            font-weight: 700;
+            color: #991b1b;
+            margin-bottom: 0.25rem;
+        }
+
+        .case-category {
+            display: inline-block;
+            background: rgba(30, 58, 138, 0.1);
+            color: var(--primary);
+            border-radius: 6px;
+            padding: 0.35rem 0.75rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+        }
+
+        .case-category:hover {
+            background: rgba(30, 58, 138, 0.15);
+        }
+            border: 1px solid rgba(30, 64, 175, 0.15);
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .case-image {
+            width: 85%;
+            height: auto;
+            object-fit: contain;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border: 1px solid rgba(15, 23, 42, 0.08);
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .case-video {
+            width: 100%;
+            height: 200px;
+            background: rgba(243, 244, 246, 0.6);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(15, 23, 42, 0.08);
+            color: #9ca3af;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .case-video i {
+            font-size: 3.5rem;
+            color: #9ca3af;
+            z-index: 1;
+        }
+
+        /* Carousel controls */
+        .carousel-controls {
+            display: flex;
+            justify-content: center;
+            gap: 0.75rem;
+            margin-top: 2rem;
+        }
+
+        .carousel-control {
+            width: 2.75rem;
+            height: 2.75rem;
+            border-radius: 8px;
+            background: rgba(243, 244, 246, 0.8);
+            border: 1px solid rgba(15, 23, 42, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #9ca3af;
+        }
+
+        .carousel-control:hover:not(:disabled) {
+            background: rgba(30, 64, 175, 0.1);
+            border-color: rgba(30, 64, 175, 0.2);
+            color: #1e40af;
+        }
+
+        .carousel-control:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .carousel-indicators {
+            display: flex;
+            justify-content: center;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+        }
+
+        .carousel-indicator {
+            width: 0.875rem;
+            height: 0.875rem;
+            border-radius: 50%;
+            background: rgba(15, 23, 42, 0.12);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(15, 23, 42, 0.1);
+        }
+
+        .carousel-indicator.active {
+            background: linear-gradient(135deg, #1e40af, #7c3aed);
+            border-color: rgba(15, 23, 42, 0.2);
+        }
+
+        /* Sequence display */
+        .correct-sequence {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .correct-sequence-item {
+            background-color: rgba(34, 197, 94, 0.08);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            border-radius: 6px;
+            padding: 0.4rem 0.75rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #166534;
+        }
+
+        .correct-sequence-item:not(:last-child)::after {
+            content: " →";
+            margin-left: 0.5rem;
+        }
+
+        /* Options */
+        .options-list {
+            margin-top: 0.75rem;
+        }
+
+        .option-item {
+            padding: 0.4rem 0.75rem;
+            border: 1px solid rgba(15, 23, 42, 0.08);
+            border-radius: 6px;
+            font-size: 0.875rem;
+            background-color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 0.35rem;
+            color: #6b7280;
+            transition: all 0.2s ease;
+        }
+
+        .option-item:hover {
+            background-color: rgba(30, 64, 175, 0.05);
+            border-color: rgba(30, 64, 175, 0.15);
+        }
+
+        .option-letter {
+            font-weight: 700;
+            margin-right: 0.5rem;
+            color: #1e40af;
+        }
+
+        .correct-answer {
+            font-weight: 700;
+            color: #166534;
+        }
+
+        /* Layouts */
+        .two-image-container {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 1rem;
+        }
+
+        .two-image-container .image-wrapper {
+            flex: 1;
+            text-align: center;
+        }
+
+        .two-image-container .image-wrapper img {
+            width: 100%;
+            height: 130px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            border: 1px solid rgba(15, 23, 42, 0.08);
+        }
+
+        .two-image-container .image-wrapper .label {
+            font-size: 0.8rem;
+            color: #9ca3af;
+            font-weight: 600;
+        }
+
+        .coordinate-grid {
+            background-image: 
+                linear-gradient(rgba(30, 64, 175, 0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(30, 64, 175, 0.04) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        /* Summary section */
+        .summary-section {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            border: none;
+            border-radius: 16px;
+            padding: 3rem;
+            margin-top: 3rem;
+            color: #ffffff;
+        }
+
+        .summary-title {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .summary-content {
+            color: #f1f5f9;
+            line-height: 1.9;
+            text-align: justify;
+            font-size: 1rem;
+        }
+
+        /* Stats styling */ 
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-label {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+        }
+
+        .stat-card {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(30, 58, 138, 0.12);
+        }
+
+        /* Spatial background */
         .spatial-background {
             position: relative;
             overflow: hidden;
@@ -150,18 +713,13 @@
         .spatial-background::before {
             content: "";
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+            inset: 0;
             background-image: 
-                radial-gradient(circle at 20% 30%, rgba(59, 130, 246, 0.1) 2px, transparent 2px),
-                radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.1) 2px, transparent 2px),
-                radial-gradient(circle at 40% 70%, rgba(16, 185, 129, 0.1) 2px, transparent 2px),
-                radial-gradient(circle at 60% 50%, rgba(245, 158, 11, 0.1) 2px, transparent 2px),
-                radial-gradient(circle at 30% 80%, rgba(99, 102, 241, 0.1) 2px, transparent 2px);
-            background-size: 200px 200px;
-            opacity: 0.4;
+                radial-gradient(circle at 20% 30%, rgba(30, 64, 175, 0.04) 3px, transparent 3px),
+                radial-gradient(circle at 80% 20%, rgba(124, 58, 237, 0.04) 3px, transparent 3px),
+                radial-gradient(circle at 40% 70%, rgba(8, 145, 178, 0.04) 3px, transparent 3px);
+            background-size: 300px 300px;
+            opacity: 0.5;
             z-index: 0;
         }
         
@@ -169,271 +727,12 @@
             position: relative;
             z-index: 1;
         }
-        
-        /* Coordinate grid pattern */
-        .coordinate-grid {
-            background-image: 
-                linear-gradient(rgba(59, 130, 246, 0.05) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(59, 130, 246, 0.05) 1px, transparent 1px);
-            background-size: 40px 40px;
-        }
-        
-        /* Two-image layout for egocentric reasoning */
-        .two-image-container {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 8px;
-        }
-        
-        .two-image-container .image-wrapper {
-            flex: 1;
-            text-align: center;
-        }
-        
-        .two-image-container .image-wrapper img {
-            width: 100%;
-            height: 120px;
-            object-fit: cover;
-            border-radius: 6px;
-            margin-bottom: 4px;
-        }
-        
-        .two-image-container .image-wrapper .label {
-            font-size: 0.75rem;
-            color: #64748b;
-            font-weight: 500;
-        }
-        
-        /* Correct answer display for sequence questions */
-        .correct-sequence {
-            display: flex;
-            gap: 4px;
-            flex-wrap: wrap;
-        }
-        
-        .correct-sequence-item {
-            background-color: #f0fdf4;
-            border: 1px solid #22c55e;
-            border-radius: 4px;
-            padding: 2px 8px;
-            font-size: 0.75rem;
-            font-weight: 500;
-        }
-        
-        .correct-sequence-item:not(:last-child)::after {
-            content: " →";
-            color: #22c55e;
-            margin-left: 4px;
-        }
-        
-        /* Options display with letters */
-        .options-list {
-            margin-top: 0.5rem;
-        }
-        
-        .option-item {
-            padding: 0.25rem 0.5rem;
-            border: 1px solid #e2e8f0;
-            border-radius: 4px;
-            font-size: 0.875rem;
-            background-color: #f8fafc;
-            margin-bottom: 0.25rem;
-        }
-        
-        .option-letter {
-            font-weight: bold;
-            margin-right: 0.5rem;
-            color: #6b7280;
-        }
-        
-        .correct-answer {
-            font-weight: bold;
-            color: #22c55e;
-        }
-        .case-carousel {
-            position: relative;
-            max-width: 100%;
-            margin: 0 auto;
-            padding: 1rem;
-        }
-        .case-item {
-            display: none;
-            padding: 1.5rem;
-            border: 2px solid #e2e8f0;
-            border-radius: 0.75rem;
-            background: white;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-        }
-        .case-item.active {
-            display: block;
-        }
-        .carousel-controls {
-            display: flex;
-            justify-content: center;
-            gap: 0.5rem;
-            margin-top: 2rem;
-        }
-        .carousel-control {
-            width: 2.5rem;
-            height: 2.5rem;
-            border-radius: 0.5rem;
-            background: #f1f5f9;
-            border: 1px solid #e2e8f0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .carousel-control:hover {
-            background: #e2e8f0;
-        }
-        .carousel-control:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            background: #f8fafc;
-        }
-        .carousel-control i {
-            font-size: 1.25rem;
-            color: #6b7280;
-        }
-        .carousel-indicators {
-            display: flex;
-            justify-content: center;
-            gap: 0.5rem;
-            margin-top: 1rem;
-        }
-        .carousel-indicator {
-            width: 0.75rem;
-            height: 0.75rem;
-            border-radius: 50%;
-            background: #e2e8f0;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .carousel-indicator.active {
-            background: #3b82f6;
-        }
-        .case-image {
-            width: 80%;
-            height: auto;
-            object-fit: contain;
-            border-radius: 0.5rem;
-            margin-bottom: 1rem;
-            border: 1px solid #e2e8f0;
-            display: block;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        .case-title {
-            font-size: 1.125rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            color: #1f2937;
-        }
-        .case-question {
-            font-size: 0.875rem;
-            margin-bottom: 1rem;
-            line-height: 1.5;
-            color: #4b5563;
-        }
-        .case-model-response {
-            background: #fee2e2;
-            border: 1px solid #fca5a5;
-            border-radius: 0.5rem;
-            padding: 0.75rem;
-            margin-bottom: 1rem;
-            font-size: 0.875rem;
-            color: #dc2626;
-        }
-        .case-correct-answer {
-            background: #f0fdf4;
-            border: 1px solid #4ade80;
-            border-radius: 0.5rem;
-            padding: 0.75rem;
-            margin-bottom: 1rem;
-            font-size: 0.875rem;
-            color: #16a34a;
-        }
-        .case-analysis {
-            background: #f3f4f6;
-            border: 1px solid #d1d5db;
-            border-radius: 0.5rem;
-            padding: 0.75rem;
-            font-size: 1.000rem;
-            color: #4b5563;
-        }
-        .case-category {
-            display: inline-block;
-            background: #e0f2fe;
-            color: #0ea5e9;
-            border-radius: 0.375rem;
-            padding: 0.25rem 0.5rem;
-            font-size: 0.75rem;
-            font-weight: 500;
-            margin-bottom: 0.5rem;
-        }
-        .case-video {
-            width: 100%;
-            height: 200px;
-            background: #f3f4f6;
-            border-radius: 0.5rem;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 1px solid #e2e8f0;
-            color: #6b7280;
-            position: relative;
-        }
-        .case-video::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(45deg, #f8fafc 25%, transparent 25%), 
-                        linear-gradient(-45deg, #f8fafc 25%, transparent 25%), 
-                        linear-gradient(45deg, transparent 75%, #f8fafc 75%), 
-                        linear-gradient(-45deg, transparent 75%, #f8fafc 75%);
-            background-size: 20px 20px;
-            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
-        }
-        .case-video i {
-            font-size: 3rem;
-            color: #94a3b8;
-            z-index: 1;
-        }
-        .case-model-name {
-            font-weight: 600;
-            color: #dc2626;
-            margin-bottom: 0.25rem;
-        }
-        .summary-section {
-            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-            border-radius: 0.75rem;
-            padding: 2rem;
-            margin-top: 2rem;
-        }
-        .summary-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #1e293b;
-            margin-bottom: 1rem;
-            text-align: center;
-        }
-        .summary-content {
-            color: #374151;
-            line-height: 1.7;
-            text-align: justify;
-        }
+    </style>
     </style>
 </head>
 <body class="min-h-screen">
     <!-- Header -->
-    <header class="bg-white/80 backdrop-blur-sm border-b border-gray-200 shadow-sm">
+    <header class="border-b shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div class="text-center">
                 <!-- Logo -->
@@ -485,19 +784,19 @@
                 
                 <!-- Resource Links -->
                 <div class="flex flex-wrap justify-center gap-4 mt-4">
-                    <a href="#" class="flex items-center space-x-2 text-gray-600 hover:text-blue-600 transition-colors bg-white/70 px-3 py-2 rounded-lg border border-gray-200 hover:border-blue-300 hover:shadow-md">
+                    <a href="#" class="resource-link">
                         <i class="fab fa-github text-lg"></i>
                         <span class="text-sm font-medium">Code</span>
                     </a>
-                    <a href="https://arxiv.org/abs/2601.00092" class="flex items-center space-x-2 text-gray-600 hover:text-red-600 transition-colors bg-white/70 px-3 py-2 rounded-lg border border-gray-200 hover:border-red-300 hover:shadow-md">
+                    <a href="https://arxiv.org/abs/2601.00092" class="resource-link">
                         <i class="fas fa-file-alt text-lg"></i>
                         <span class="text-sm font-medium">Paper</span>
                     </a>
-                    <a href="https://huggingface.co/datasets/Yukinozzzzz/Spatial4D-Bench" class="flex items-center space-x-2 text-gray-600 hover:text-yellow-600 transition-colors bg-white/70 px-3 py-2 rounded-lg border border-gray-200 hover:border-yellow-300 hover:shadow-md">
+                    <a href="https://huggingface.co/datasets/Yukinozzzzz/Spatial4D-Bench" class="resource-link">
                         <i class="fas fa-cloud text-lg"></i>
                         <span class="text-sm font-medium">Data</span>
                     </a>
-                    <!-- <a href="#" class="flex items-center space-x-2 text-gray-600 hover:text-green-600 transition-colors bg-white/70 px-3 py-2 rounded-lg border border-gray-200 hover:border-green-300 hover:shadow-md">
+                    <!-- <a href="#" class="resource-link">
                         <i class="fas fa-database text-lg"></i>
                         <span class="text-sm font-medium">Dataset</span>
                     </a> -->
@@ -508,7 +807,12 @@
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <!-- Abstract Section -->
-        <div class="bg-white/70 backdrop-blur-sm rounded-xl p-6 border border-gray-200 mb-8 shadow-lg">
+        <div class="card-hover p-6 mb-8">
+            <div class="text-center mb-4">
+                <div class="inline-flex items-center justify-center w-12 h-12 rounded-full shadow-lg" style="background: linear-gradient(135deg, #0284c7, #0891b2);">
+                    <i class="fas fa-book text-white text-xl"></i>
+                </div>
+            </div>
             <h2 class="text-3xl font-bold text-gray-900 mb-4" style="text-align: center">Abstract</h2>
             <div class="prose max-w-none text-gray-700 leading-relaxed" style="font-size: 20px;">
                 <p class="mb-4" style="text-align: justify;">
@@ -534,9 +838,14 @@
             </div>
         </div>
         
+        <div class="text-center mb-4">
+            <div class="inline-flex items-center justify-center w-12 h-12 rounded-full shadow-lg" style="background: linear-gradient(135deg, #1e3a8a, #0284c7);">
+                <i class="fas fa-chart-line text-white text-xl"></i>
+            </div>
+        </div>
         <h2 class="text-3xl font-bold text-gray-900 mb-4" style="text-align: center">Overview</h2>
         <div class="max-w-7xl max-auto py-6" style="font-size: 20px;">
-            <img src="static/overview.jpg" alt="Overview" class="rounded-xl shadow-lg w-full">
+            <img src="static/overview.jpg" alt="Overview" class="rounded-xl shadow-lg w-full image-hover">
             <p class="text-left mt-4 text-gray-600" style="text-align: justify;">
                 Figure 1: An overview of <strong>Spatial4D-Bench</strong>. <strong>Spatial4D-Bench</strong> is a large-scale, multi-task evaluation benchmark
                 to comprehensively assess MLLMs’ 4D spatial reasoning abilities. It consists of ~40,000 question-answer pairs
@@ -548,7 +857,7 @@
 
         <div class="max-w-7xl max-auto py-6" style="font-size: 20px;">
             <div style="display: flex; justify-content: center; align-items: center;">
-                <img src="static/compare.png" alt="Overview" class="rounded-xl shadow-lg">
+                <img src="static/compare.png" alt="Overview" class="rounded-xl shadow-lg image-hover">
             </div>
             <p class="text-center mt-4 text-gray-600" style="text-align: justify;">
                 Table 1: Comparison of <strong>Spatial4D-Bench</strong> with state-of-the-art spatial intelligence benchmarks. We evaluate
@@ -562,14 +871,14 @@
         </div>
 
         <div class="max-w-7xl max-auto py-6" style="font-size: 20px;">
-            <img src="static/dataset_statistics.jpg" alt="Overview" class="rounded-xl shadow-lg w-full">
+            <img src="static/dataset_statistics.jpg" alt="Overview" class="rounded-xl shadow-lg w-full image-hover">
             <p class="text-center mt-4 text-gray-600">
                 Figure 2: Distribution of question-answer pairs provided by our <strong>Spatial4D-Bench</strong>.
             </p>
         </div>
 
         <div class="max-w-7xl max-auto py-6" style="font-size: 20px;">
-            <img src="static/taxonomy.png" alt="Overview" class="rounded-xl shadow-lg w-full">
+            <img src="static/taxonomy.png" alt="Overview" class="rounded-xl shadow-lg w-full image-hover">
             <p class="text-left mt-4 text-gray-600" style="text-align: justify;">
                 Figure 3: <strong>Spatial4D-Bench</strong> Task Taxonomy. We organize 18 distinct tasks into 6 progressive categories
                 representing the spectrum of spatial cognition. The taxonomy progresses from perception and understanding in
@@ -579,29 +888,29 @@
         </div>
 
         <!-- Stats Section -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            <div class="text-center p-3 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl border border-blue-200 shadow-md">
-                <div class="text-lg md:text-xl font-bold text-blue-700 mb-1">15</div>
-                <div class="text-gray-600 text-sm" style="font-size: 15px;">Datasets</div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12 py-4">
+            <div class="stat-card">
+                <div class="stat-number">15</div>
+                <div class="stat-label">Datasets</div>
             </div>
-            <div class="text-center p-3 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl border border-purple-200 shadow-md">
-                <div class="text-lg md:text-xl font-bold text-purple-700 mb-1">6</div>
-                <div class="text-gray-600 text-sm" style="font-size: 15px;">Categories</div>
+            <div class="stat-card">
+                <div class="stat-number">6</div>
+                <div class="stat-label">Categories</div>
             </div>
-            <div class="text-center p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200 shadow-md">
-                <div class="text-lg md:text-xl font-bold text-green-700 mb-1">18</div>
-                <div class="text-gray-600 text-sm" style="font-size: 15px;">Total Tasks</div>
+            <div class="stat-card">
+                <div class="stat-number">18</div>
+                <div class="stat-label">Total Tasks</div>
             </div>
-            <div class="text-center p-3 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200 shadow-md">
-                <div class="text-lg md:text-xl font-bold text-amber-700 mb-1">40000+</div>
-                <div class="text-gray-600 text-sm" style="font-size: 15px;">QA Pairs</div>
+            <div class="stat-card">
+                <div class="stat-number">40K+</div>
+                <div class="stat-label">QA Pairs</div>
             </div>
         </div>
 
         <!-- Benchmark Sections -->
         <div class="grid grid-cols-1 md:grid-cols-6 gap-6 mb-12" id="benchmark-sections">
             <!-- Object Understanding -->
-            <div class="bg-white/70 backdrop-blur-sm rounded-xl p-6 border border-gray-200 hover:border-blue-300 transition-all duration-300 cursor-pointer shadow-lg card-hover" data-section="ObjectUnderstanding">
+            <div class="card-hover p-6 cursor-pointer" data-section="ObjectUnderstanding">
                 <div class="flex flex-col items-center space-y-4 mb-4">
                     <div class="custom-icon">
                         <svg viewBox="0 0 24 24">
@@ -617,7 +926,7 @@
             </div>
 
             <!-- Scene Understanding -->
-            <div class="bg-white/70 backdrop-blur-sm rounded-xl p-6 border border-gray-200 hover:border-blue-300 transition-all duration-300 cursor-pointer shadow-lg card-hover" data-section="SceneUnderstanding">
+            <div class="card-hover p-6 cursor-pointer" data-section="SceneUnderstanding">
                 <div class="flex flex-col items-center space-y-4 mb-4">
                     <div class="custom-icon">
                         <svg viewBox="0 0 24 24">
@@ -635,7 +944,7 @@
             </div>
 
             <!-- Spatial Relationship Understanding -->
-            <div class="bg-white/70 backdrop-blur-sm rounded-xl p-6 border border-gray-200 hover:border-blue-300 transition-all duration-300 cursor-pointer shadow-lg card-hover" data-section="SpatialRelationshipUnderstanding">
+            <div class="card-hover p-6 cursor-pointer" data-section="SpatialRelationshipUnderstanding">
                 <div class="flex flex-col items-center space-y-4 mb-4">
                     <div class="custom-icon">
                         <svg viewBox="0 0 24 24">
@@ -652,7 +961,7 @@
             </div>
 
             <!-- Spatiotemporal Relationship Understanding -->
-            <div class="bg-white/70 backdrop-blur-sm rounded-xl p-6 border border-gray-200 hover:border-orange-300 transition-all duration-300 cursor-pointer shadow-lg card-hover" data-section="SpatiotemporalRelationshipUnderstanding">
+            <div class="card-hover p-6 cursor-pointer" data-section="SpatiotemporalRelationshipUnderstanding">
                 <div class="flex flex-col items-center space-y-4 mb-4">
                     <div class="custom-icon">
                         <svg viewBox="0 0 24 24">
@@ -669,7 +978,7 @@
             </div>
 
             <!-- Spatial Reasoning -->
-            <div class="bg-white/70 backdrop-blur-sm rounded-xl p-6 border border-gray-200 hover:border-indigo-300 transition-all duration-300 cursor-pointer shadow-lg card-hover" data-section="SpatialReasoning">
+            <div class="card-hover p-6 cursor-pointer" data-section="SpatialReasoning">
                 <div class="flex flex-col items-center space-y-4 mb-4">
                     <div class="custom-icon">
                         <svg viewBox="0 0 24 24">
@@ -686,7 +995,7 @@
             </div>
 
             <!-- Spatiotemporal Reasoning -->
-            <div class="bg-white/70 backdrop-blur-sm rounded-xl p-6 border border-gray-200 hover:border-indigo-300 transition-all duration-300 cursor-pointer shadow-lg card-hover" data-section="SpatiotemporalReasoning">
+            <div class="card-hover p-6 cursor-pointer" data-section="SpatiotemporalReasoning">
                 <div class="flex flex-col items-center space-y-4 mb-4">
                     <div class="custom-icon">
                         <svg viewBox="0 0 24 24">
@@ -708,10 +1017,10 @@
         </div>
 
         <!-- QA Examples Section (Hidden by default) -->
-        <div id="qa-examples-section" class="hidden bg-white/70 backdrop-blur-sm rounded-xl p-6 border border-gray-200 mb-12 shadow-lg">
+        <div id="qa-examples-section" class="hidden qa-examples-container mb-12">
             <div class="flex items-center justify-between mb-6">
                 <h3 class="text-2xl font-bold text-gray-900" id="qa-title">QA Examples</h3>
-                <i class="fas fa-comment text-blue-500 text-xl"></i>
+                <i class="fas fa-comment grad-icon-text text-xl"></i>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="qa-examples-grid">
                 <!-- QA examples will be populated by JavaScript -->
@@ -731,7 +1040,7 @@
                 </p>
             </div>
 
-            <div class="bg-white/70 backdrop-blur-sm rounded-xl p-4 border border-gray-200 shadow-lg overflow-x-auto">
+            <div class="card-hover p-4 overflow-x-auto">
                 <table class="w-full min-w-[1600px]">
                     <thead>
                         <tr class="border-b border-gray-200 bg-gray-50">
@@ -1238,225 +1547,9 @@
                     </tbody>
                 </table>
             </div>
-
-            <!-- <h2 class="text-3xl font-bold text-gray-900 mb-2" style="text-align: center">Main Evaluation Results</h2>
-            <div class="max-w-7xl max-auto" style="font-size: 20px;">
-            <div style="display: flex; justify-content: center; align-items: center;">
-                <img src="static/radar.png" alt="Overview" class="rounded-xl shadow-lg">
-            </div>
-            <p class="text-left mt-4 text-gray-600" style="text-align: center;">
-                Figure 4: Radar chart visualization of model performance across 18 tasks on <strong>Spatial4D-Bench</strong>.
-            </p>
-        </div>
-
-        <div class="max-w-7xl max-auto" style="font-size: 20px;">
-            <div style="display: flex; justify-content: center; align-items: center;">
-                <img src="static/blind.png" alt="Overview" class="rounded-xl shadow-lg">
-            </div>
-            <p class="text-left mt-4 text-gray-600" style="text-align: justify;">
-                Table 2: Visual Ablation Study evaluated on Qwen3-VL-30B-A3B. Video Input: Full 64 frames. Image
-                Input: Single frame (random). Text Input: Text-only. While performance generally degrades as visual
-                information is removed, text-only input (bolded) outperforms single-frame input in tasks requiring global
-                context (e.g., route plan, scene classification), suggesting that incomplete visual data can act as a distractor
-                that overrides correct language priors.
-            </p>
-        </div>
-
-        <div class="prose max-w-none text-gray-700 leading-relaxed" style="font-size: 20px;">
-            <p class="mb-4" style="text-align: justify;">
-                <strong>The overall performance gap between MLLMs and human-level 4D spatial intelligence remains significant.</strong>
-                From Figure 4a and the leaderboard result, we can see that the overall 4D spatial intelligence performance of
-                MLLMs remains significantly inferior to that of humans. The best proprietary model, GPT-5, achieves an
-                average score of 63.39, while the best open-source model, Qwen3-VL-235B-A22B, yields an average score of
-                59.35. This indicates that the performance gap between the best proprietary MLLMs and the best open-source
-                MLLMs is relatively small, although the best proprietary MLLMs still perform better. However, the overall
-                performance gap between MLLMs (both proprietary and open-source) and human-level 4D spatial intelligence
-                remains significant. On <strong>Spatial4D-Bench</strong>, humans achieve an average score of 75.52, outperforming the best
-                proprietary model (GPT-5) by approximately 12 and the best open-source model (Qwen3-VL-235B-A22B)
-                by 16. Current MLLMs appear to operate as “frame-based observers” rather than “world observers”. They
-                lack an intuitive physics engine or coherent temporal memory, preventing effective reasoning about causality,
-                permanence, and dynamics. <strong>Spatial4D-Bench</strong> effectively exposes this 4D reasoning gap, which was invisible
-                in existing benchmarks. Substantial efforts are required to further improve MLLMs toward human-level spatial
-                cognition.
-            </p>
-        </div>
-
-        <div class="prose max-w-none text-gray-700 leading-relaxed" style="font-size: 20px;">
-            <p class="mb-4" style="text-align: justify;">
-                <strong>MLLMs have reached or even surpassed human-level spatial cognition on some understanding-related
-                tasks.</strong> As shown in leaderboard, Figure 4b and Figure 4c, for the fundamental object/scene understanding
-                category (e.g. object size, object counting, and room size), existing MLLMs often reach or even surpass
-                human performance. In particular, Qwen3-VL-30B-A3B achieves 80.10 on the object size estimation task,
-                outperforming the human baseline of 74.61. In addition, on the object counting task, the best MLLM also
-                outperforms human performance. We attribute this to distinct cognitive processing differences. First, while
-                humans rely on intuitive relative scale, they struggle with precise absolute metric estimation (e.g., “is this table
-                1.2m or 1.4m?”) from 2D projections without explicit reference scales while MLLMs leverage massive prior
-                knowledge obtained by pre-training on 3D and geometric data which are useful. Moreover, it is noticed that
-                external factors can also result in low accuracy of the human evaluation. For example, in object counting, to
-                elevate the the difficulty level in model evaluation, <strong>Spatial4D-Bench</strong> includes a set of low-resolution videos
-                with significant jittering and inconsistent frames compared with videos used in VSI-Bench, posing a huge challenge
-                to human evaluators in correctly matching and identifying the objects within these videos. We have also found
-                that discrepancies among humans in defining the object categories also play an important role in the low
-                accuracy of this task. While a nightstand is considered to be a table in the QA design, a human evaluator may
-                not count it as a table, causing inconsistent result with the ground truth answer.
-            </p>
-        </div>
-
-        <div class="prose max-w-none text-gray-700 leading-relaxed" style="font-size: 20px;">
-            <p class="mb-4" style="text-align: justify;">
-                <strong>MLLMs usually perform significantly worse than humans on spatial reasoning and spatiotemporal
-                reasoning tasks.</strong> The primary source of the human-AI gap lies in reasoning-related tasks. As shown
-                in leaderboard, Figure 4e, and Figure 4f, MLLMs exhibit substantial performance degradation on the spatial
-                reasoning and spatiotemporal reasoning categories. These challenging categories are the core of <strong>Spatial4D-Bench</strong>.
-                Specifically, for spatiotemporal reasoning, even the top-tier MLLMs lag significantly behind humans
-                (e.g., GPT-5 scores 32.83 on route plan vs. Human 91.67). This ~60% gap highlights a fundamental deficiency
-                of MLLMs in maintaining a coherent 4D world model over extended temporal sequences. For the physical plausibility reasoning task, MLLMs score near random chance (30% − 40%), whereas humans intuitively
-                reject these physically impossible scenarios (66.67%). This indicates that SOTA MLLMs struggle to ground
-                visual perception in fundamental physical laws.
-            </p>
-        </div>
-
-        <div class="mt-16 mb-16">
-            <div class="text-center mb-8">
-                <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-r from-red-400 to-orange-500 mb-4 shadow-lg">
-                    <i class="fas fa-exclamation-triangle text-white text-xl"></i>
-                </div>
-                <h2 class="text-3xl font-bold text-gray-900 mb-2">Qualitative Case Analysis</h2>
-                <p class="text-lg text-gray-600 max-w-3xl mx-auto">
-                    Examples of failure cases where state-of-the-art models provide incorrect answers despite human-level performance on the same tasks.
-                </p>
-            </div>
-
-            <div class="case-carousel">
-                <div class="case-item active" id="case-1">
-                    <div class="case-category">Spatiotemporal Reasoning - Action Prediction</div>
-                    <h3 class="case-title">Case 1: MLLMs are Relatively Fragile in Spatio-Temporal Continuity</h3>
-                    <img src="static/action.png" alt="act" class="case-image">
-                    <div class="case-analysis" style="text-align: justify;">
-                        <strong>Analysis:</strong> A major challenge in 4D spatial intelligence
-                        is spatiotemporal reasoning that requires understanding a coherent 4D world over time rather than treating
-                        videos as a collection of disjoint semantic concepts. By designing tasks that connect past, present, and future
-                        visual observations, <strong>Spatial4D-Bench</strong> reveals a significant temporal incoherence in SOTA MLLMs. In Case 1
-                        (failure), the ground truth action is “washing” a yogurt cup, but the model incorrectly predicts “placing it in
-                        the sink”, driven by a semantic prior rather than the specific temporal action. The benchmark’s design allows
-                        us to probe the cause via the model’s self-explanation: “...the person walks to the sink holding the empty cup...
-                        indicating they are about to place it in the sink rather than wash it or throw it away”. This textual feedback
-                        from the model demonstrates that the model successfully tracked the trajectory but failed to infer the latent
-                        intent (washing for recycling), proving that even powerful models fail to ground their predictions in the actual
-                        temporal dynamics when those dynamics conflict with training priors. On the other hand, Case 2 (success)
-                        validates the benchmark’s ability to measure robust chain-of-thought reasoning when explicit cues (OCR) are
-                        present. The model correctly infers the drink will taste “sweet” by synthesizing the label “sugar” with the
-                        stirring action (“mixing sugar into the drink makes it sweet...”). This contrast underscores the diagnostic value
-                        of our <strong>Spatial4D-Bench</strong>: it can distinguish between scenarios where models rely on robust textual grounding
-                        versus those where they collapse into hallucination due to temporal ambiguity.
-                    </div>
-                </div>
-
-                <div class="case-item" id="case-2">
-                    <div class="case-category">Spatiotemporal Reasoning - Physical Plausibility Reasoning</div>
-                    <h3 class="case-title">Case 2: MLLMs Exhibit a Knowledge-Perception Gap in Intuitive Physics</h3>
-                    <img src="static/phsysic.png" alt="physic" class="case-image">
-                    <div class="case-analysis" style="text-align: justify;">
-                        <strong>Analysis:</strong> By incorporating the physical
-                        plausibility reasoning in the spatiotemporal reasoning category, specifically using AI-generated physical
-                        anomalies, <strong>Spatial4D-Bench</strong> provides a unique evaluation of the “intuitive physics engine” of MLLMs. Our
-                        evaluation exposes a sharp dissociation between low-level perceptual grounding and high-level physical
-                        knowledge. In Case 1 (failure), the benchmark challenges the model with a subtle violation of fluid
-                        dynamics. GPT-5 fails to identify a physical anomaly where liquid levels behave inconsistently during pouring,
-                        yet its self-explanation recites perfect high-level physics principles: “Matter doesn’t disappear from one
-                        place and reappear somewhere else... Teleportation breaks locality and conservation of mass...”. This result
-                        highlights a critical insight enabled by our benchmark: SOTA models possess abstract knowledge of physical
-                        laws but lack the visual grounding to detect their violation in pixel space. The model “knows” the laws of
-                        physics but cannot “see” them being broken, relying instead on analyzing the textual plausibility of the options
-                        (e.g., rejecting “teleportation” as a concept) rather than verifying the visual dynamics. <strong>Spatial4D-Bench</strong> thus
-                        serves as a necessary filter to differentiate between models that merely know physics textually and those that
-                        can perceive physics visually. In contrast, Case 2 (success) shows that the model is capable of detecting
-                        violations in rigid body dynamics. It correctly identifies that a baseball and bat exhibit unnatural softness and
-                        defy gravity, suggesting that conspicuous deviations in material properties and trajectory dynamics are easier
-                        for current architectures to flag than subtle fluid inconsistencies.
-                    </div>
-                </div>
-
-                <div class="case-item" id="case-3">
-                    <div class="case-category">Spatiotemporal Relationship Understanding - Spatial Memory</div>
-                    <h3 class="case-title">Case 3: MLLMs have Spatial Hallucination Driven by Texture Confusion</h3>
-                    <img src="static/spatial.png" alt="spatial" class="case-image">
-                    <div class="case-analysis" style="text-align: justify;">
-                        <strong>Analysis:</strong> Through evaluation on <strong>Spatial4D-Bench</strong>,
-                        we observe that perceptual ambiguity can lead to confident hallucinations, even in tasks (such as spatial
-                        memory) that require explicit tracking. In Case 1 (failure), the model incorrectly localizes the final
-                        position of a teapot. Crucially, the self-explanation reveals a confident hallucination: “After he pours the
-                        water... he places the teapot on the back-right burner (the burner directly above the original position)”. This
-                        contradicts the visual evidence of the teapot’s placement in other locations. This suggests that texture similarity
-                        across the stove top surface causes the model to lose track of the object’s specific geometric coordinates.
-                        Unlike a tracking failure where a model might express uncertainty, here the model constructs a coherent (but
-                        false) narrative to fill the perceptual gap. This failure mode validates the necessity of <strong>Spatial4D-Bench</strong>’s
-                        fine-grained annotation: unlike simpler existence or classification tasks, our spatial memory queries force the
-                        model to confront texture confusion and occlusion. The benchmark demonstrates that even when a model is
-                        confident and generates plausible-sounding narratives, it often lacks the precise metric grounding required for
-                        4D spatial intelligence. By contrast, Case 2 (success) demonstrates that the model maintains robust temporal
-                        tracking when visual events are semantically distinct. The model correctly counts that the faucet was used
-                        “two” times. Its self-explanation, “...first to wash their hands at the sink, and later to fill a glass with water”,
-                        shows a successful linking of two separate temporal events, implying that the “grounding gap” is highly
-                        sensitive to visual saliency. The model fails when tracking requires resolving low-level texture ambiguity (Case 1) but succeeds when tracking high-level, semantically distinct actions (Case 2), further validating the
-                        benchmark’s ability to probe the granular limits of spatial memory.
-                    </div>
-                </div>
-
-                <div class="case-item" id="case-4">
-                    <div class="case-category">Spatial Reasoning - Route Plan</div>
-                    <h3 class="case-title">Case 4: MLLMs Rely on Hallucination in Egocentric Route Plan</h3>
-                    <img src="static/navigation.png" alt="spatial" class="case-image">
-                    <div class="case-analysis" style="text-align: justify;">
-                        <strong>Analysis:</strong> The route plan task in the spatial reasoning
-                        category illustrates the inability of current MLLMs to construct accurate mental maps from egocentric video
-                        streams. In the Figure, the model attempts to plan a path from a hallway to a bathroom. While GPT-5 outputs a
-                        confident self-explanation, reasoning that a right turn at step 7 would “line up with the bedroom doorway”, this
-                        contradicts the visual geometry: the robot has just entered a hallway configuration where a left turn (option A)
-                        is geometrically required to face the bedroom entrance. The model hallucinates a spatial layout that fits its internal narrative but ignores the visual reality of the scene. Furthermore, while the model correctly identifies
-                        the final turn (step 11) as a right turn, this success is coincidental, derived from a flawed intermediate trajectory.
-                        This failure highlights a critical bottleneck: SOTA MLLMs struggle with long-horizon spatial consistency and
-                        relative orientation. By enforcing strict directional accuracy over multi-step paths, <strong>Spatial4D-Bench</strong> effectively
-                        disentangles true embodied route planning capabilities from lucky guesses driven by language priors.
-                    </div>
-                </div> -->
-
-                <!-- <div class="carousel-indicators" id="case-indicators">
-                    <div class="carousel-indicator active" data-index="0"></div>
-                    <div class="carousel-indicator" data-index="1"></div>
-                    <div class="carousel-indicator" data-index="2"></div>
-                    <div class="carousel-indicator" data-index="3"></div>
-                </div>
-
-                <div class="carousel-controls">
-                    <button class="carousel-control" id="prev-case" aria-label="Previous case">
-                        <i class="fas fa-chevron-left"></i>
-                    </button>
-                    <button class="carousel-control" id="next-case" aria-label="Next case">
-                        <i class="fas fa-chevron-right"></i>
-                    </button>
-                </div> -->
             </div>
         </div>
 
-
-        <!-- Summary and Conclusion Section -->
-        <!-- <div class="summary-section">
-            <h2 class="summary-title">Summary and Conclusion</h2>
-            <div class="summary-content" style="font-size: 18px;">
-                <p class="mb-4">
-                    In this work, we present <strong>Spatial4D-Bench</strong>, a large-scale, multi-task 4D spatial intelligence benchmark
-                    designed to comprehensively assess the spatial reasoning abilities of MLLMs. <strong>Spatial4D-Bench</strong> comprises
-                    ~40,000 question-answer pairs which are organized into 6 categories covering 18 well-defined tasks that
-                    parallel the versatility of human spatial intelligence. This significantly distinguishes <strong>Spatial4D-Bench</strong> from
-                    existing benchmarks. Our thorough experiments on <strong>Spatial4D-Bench</strong> with 11 state-of-the-art open-source and
-                    proprietary MLLMs reveal that MLLMs still exhibit a performance gap relative to humans in comprehensive
-                    4D spatial reasoning. We have presented various findings derived from extensive experiments conducted
-                    on <strong>Spatial4D-Bench</strong>, which can provide valuable insights to the community. We hope that the release
-                    of <strong>Spatial4D-Bench</strong> facilitates the development of more capable MLLMs toward human-level 4D spatial
-                    intelligence.
-            </div>
-        </div> -->
 
         <div class="summary-section">
             <h2 class="summary-title">Release Schedule</h2> <div class="release-table-wrapper">
@@ -1501,59 +1594,15 @@
                     <strong>All Other Data (Remaining Components)</strong>: All other parts of the dataset are licensed under the <strong>Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)</strong>. These components may NOT be used for commercial purposes without prior written consent.
             </div>
         </div>
-
-
-
-            <!-- Leaderboard Stats -->
-            <!-- <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div class="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl p-4 border border-blue-200 shadow-lg">
-                    <div class="flex items-center space-x-2 mb-2">
-                        <i class="fas fa-star text-blue-600 text-sm"></i>
-                        <h3 class="text-gray-900 font-semibold text-sm">Top Performer</h3>
-                    </div>
-                    <p class="text-lg font-bold text-gray-900">Spatial4D-Vision-Pro</p>
-                    <p class="text-blue-600 text-sm">87.2% Overall Score</p>
-                </div>
-                <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 border border-green-200 shadow-lg">
-                    <div class="flex items-center space-x-2 mb-2">
-                        <i class="fas fa-chart-bar text-green-600 text-sm"></i>
-                        <h3 class="text-gray-900 font-semibold text-sm">Total Submissions</h3>
-                    </div>
-                    <p class="text-lg font-bold text-gray-900">6</p>
-                    <p class="text-green-600 text-sm">Active Models</p>
-                </div>
-                <div class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-4 border border-purple-200 shadow-lg">
-                    <div class="flex items-center space-x-2 mb-2">
-                        <i class="fas fa-users text-purple-600 text-sm"></i>
-                        <h3 class="text-gray-900 font-semibold text-sm">Institutions</h3>
-                    </div>
-                    <p class="text-lg font-bold text-gray-900">6</p>
-                    <p class="text-purple-600 text-sm">Leading Research Labs</p>
-                </div>
-            </div> -->
         </div>
     </div>
 </div>
 
     <!-- Footer -->
-    <footer class="border-t border-gray-200 mt-16 bg-white/80 backdrop-blur-sm">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div class="flex flex-col md:flex-row items-center justify-between">
-                <div class="flex items-center space-x-2 mb-4 md:mb-0">
-                    <div class="p-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 shadow-md">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                            <circle cx="12" cy="12" r="10" fill="none"/>
-                            <line x1="12" y1="8" x2="12" y2="16" fill="none"/>
-                            <line x1="8" y1="12" x2="16" y2="12" fill="none"/>
-                        </svg>
-                    </div>
-                    <span class="text-gray-900 font-semibold">Spatial4D-Bench</span>
-                </div>
-            </div>
-            <div class="mt-6 pt-6 border-t border-gray-200 text-center text-gray-500 text-sm">
+    <footer class="border-t border-gray-200 mt-16 bg-white">
+            <div class="text-center text-gray-500 text-sm">
                 <p>© Copyright (c) 2026 Huawei Technologies Co., Ltd. All Rights Reserved.</p>
             </div>
-        </div>
     </footer>
 
     <script>
@@ -2436,7 +2485,7 @@
             } else {
                 examples.forEach((example, index) => {
                     const exampleElement = document.createElement('div');
-                    exampleElement.className = 'bg-white/60 backdrop-blur-sm rounded-lg p-4 border border-gray-200 hover:shadow-lg transition-shadow';
+                    exampleElement.className = 'qa-card';
                     
                     let mediaHtml = '';
                     if (example.images && example.images.length === 2) {
